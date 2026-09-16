@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Build Your Care System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#191C18; --bg-light:#F5F3EE; --panel:#EDEAE0; --studio-1:#F3F1EA; --studio-2:#DFDCD1;
+    --ink:#1E211D; --ink-soft:#4B4E48;
+    --teal:#4F8079; --teal-deep:#3E6560; --silver:#C7CCC5; --sand:#D8C9A9; --sand-dark:#B79E77;
+    --rule-dark:rgba(255,255,255,0.14); --rule-light:rgba(30,33,29,0.14);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  .wrap{max-width:1280px; margin:0 auto; padding-left:5vw; padding-right:5vw;}
+  section{padding:5.5rem 0;}
+  .eyebrow-rule{border:none; border-top:1px solid var(--rule-light); margin:0 0 1.6rem; width:3rem;}
+  .eyebrow-rule--dark{border-top-color:var(--rule-dark);}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; font-size:0.95rem; font-weight:600; padding:0.85rem 1.5rem; border-radius:5px; cursor:pointer; text-decoration:none; border:1px solid transparent; transition:transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease; white-space:nowrap;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#0F1210;}
+  .btn-primary:hover, .btn-primary:focus-visible{background:#5c9089;}
+  .btn-outline{background:transparent; color:var(--ink); border-color:rgba(30,33,29,0.35);}
+  .btn-outline:hover, .btn-outline:focus-visible{border-color:var(--ink);}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--teal); outline-offset:3px;}
+
+  .reveal{opacity:0; transform:translateY(14px);}
+  .reveal.is-in{opacity:1; transform:translateY(0); transition:opacity .7s ease, transform .7s ease;}
+  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1; transform:none; transition:none;} .robot-light{animation:none !important;} }
+  .robot-light{animation:pulse 3.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:0.6;} 50%{opacity:1;}}
+
+  /* ---------- Intro ---------- */
+  .intro{background:radial-gradient(ellipse at 70% 45%, var(--studio-1) 0%, var(--studio-2) 100%); min-height:78vh; display:flex; align-items:center;}
+  .intro__grid{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:2rem; width:100%;}
+  .intro__headline{font-size:clamp(2.2rem,3.8vw,3.3rem); line-height:1.12; margin:0 0 1.2rem;}
+  .intro__sub{font-size:1.05rem; line-height:1.65; color:var(--ink-soft); max-width:38ch; margin:0 0 1rem;}
+  .intro__note{font-size:0.95rem; color:var(--sand-dark); font-weight:600; margin:0 0 2rem;}
+  .intro__actions{display:flex; gap:1.2rem; flex-wrap:wrap;}
+  .intro__robot{width:100%; max-width:340px; margin:0 auto; display:block; filter:drop-shadow(0 24px 30px rgba(20,22,16,0.16));}
+
+  /* ---------- Mini how-it-works ---------- */
+  .mini-flow{background:var(--panel);}
+  .mini-flow .flow{display:flex; gap:0; position:relative;}
+  .mini-flow .flow::before{content:""; position:absolute; top:9px; left:0; right:0; height:1px; background:var(--rule-light);}
+  .mini-flow .flow__node{flex:1; padding-right:1.4rem; position:relative;}
+  .mini-flow .flow__num{display:block; font-size:0.82rem; color:var(--teal); margin-bottom:0.9rem;}
+  .mini-flow .flow__num::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--panel); border:2px solid var(--teal); margin-right:0.5rem; vertical-align:middle; margin-top:-2px;}
+  .mini-flow .flow__title{font-size:0.98rem; font-weight:600; margin:0;}
+
+  /* ---------- Configurator shell ---------- */
+  .configurator{padding-top:5rem;}
+  .step-nav{display:flex; gap:0; border-bottom:1px solid var(--rule-light); margin-bottom:3rem;}
+  .step-tab{background:none; border:none; cursor:pointer; padding:0 2.2rem 1.1rem 0; margin-right:1.6rem; text-align:left; border-bottom:2px solid transparent; margin-bottom:-1px;}
+  .step-tab__num{display:block; font-family:'Libre Caslon Display',serif; font-size:1.1rem; color:var(--sand-dark); margin-bottom:0.3rem;}
+  .step-tab__label{font-size:0.98rem; color:var(--ink-soft); font-weight:500;}
+  .step-tab.is-active{border-bottom-color:var(--teal);}
+  .step-tab.is-active .step-tab__label{color:var(--ink); font-weight:600;}
+  .step-tab.is-done .step-tab__num{color:var(--teal);}
+
+  .config-grid{display:grid; grid-template-columns:1fr 340px; gap:3.5rem; align-items:start;}
+  .step-panel{display:none;}
+  .step-panel.is-active{display:block;}
+
+  /* ---------- Step 1: Robot viewer ---------- */
+  .robot-stage{display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center;}
+  .robot-canvas{position:relative; background:radial-gradient(ellipse at 50% 42%, var(--studio-1) 0%, var(--studio-2) 100%); border-radius:8px; padding:3rem 2rem; min-height:380px; display:flex; align-items:center; justify-content:center;}
+  .robot-canvas__wrap{width:210px; transition:transform .4s cubic-bezier(.2,.7,.3,1);}
+  .robot-controls{display:flex; gap:0.6rem; margin-top:1.4rem; flex-wrap:wrap;}
+  .view-btn{font-size:0.83rem; padding:0.45rem 0.85rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft); cursor:pointer;}
+  .view-btn.is-active, .view-btn:hover{border-color:var(--ink); color:var(--ink);}
+  .robot-rotate{display:flex; align-items:center; gap:0.8rem; margin-top:1.1rem; font-size:0.83rem; color:var(--ink-soft);}
+  .robot-rotate input{flex:1;}
+  .robot-info h3{font-size:1.5rem; margin:0 0 0.6rem;}
+  .robot-info p{font-size:1rem; line-height:1.65; color:var(--ink-soft); margin:0 0 1.4rem; max-width:36ch;}
+  .cap-list{list-style:none; margin:0 0 1.8rem; padding:0; display:flex; flex-direction:column; gap:0.6rem;}
+  .cap-list li{font-size:0.92rem; color:var(--ink-soft); padding-left:1.2rem; position:relative;}
+  .cap-list li::before{content:"–"; position:absolute; left:0; color:var(--sand-dark);}
+  .select-btn{display:inline-flex; align-items:center; gap:0.5rem; font-size:0.92rem; font-weight:600; padding:0.7rem 1.2rem; border-radius:5px; border:1px solid var(--ink); background:transparent; color:var(--ink); cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;}
+  .select-btn.is-selected{background:var(--teal); border-color:var(--teal); color:#0F1210;}
+
+  /* ---------- Step 2: Sensors ---------- */
+  .sensor-stage{display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start;}
+  .scene-box{background:var(--panel); border-radius:8px; padding:1.6rem; min-height:400px; display:flex; align-items:center; justify-content:center;}
+  .scene-svg{width:100%; height:auto;}
+  .sensor-mark{opacity:0; transition:opacity .5s ease;}
+  .sensor-mark.is-on{opacity:1;}
+  .sensor-row{display:grid; grid-template-columns:2.2rem 1fr auto; gap:1rem; align-items:start; padding:1.1rem 0; border-bottom:1px solid var(--rule-light);}
+  .sensor-row__icon{width:34px; height:34px; border-radius:9px; background:var(--bg-light); border:1px solid var(--rule-light); display:flex; align-items:center; justify-content:center;}
+  .sensor-row__title{font-size:1rem; font-weight:600; margin:0 0 0.2rem;}
+  .sensor-row__desc{font-size:0.87rem; color:var(--ink-soft); margin:0; line-height:1.5;}
+  .add-btn{font-size:0.85rem; font-weight:600; padding:0.55rem 1rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink); cursor:pointer; white-space:nowrap; transition:all .2s ease;}
+  .add-btn.is-added{background:var(--teal); border-color:var(--teal); color:#0F1210;}
+
+  .recommend{background:var(--bg-light); border:1px solid var(--rule-light); border-radius:8px; padding:1.6rem; margin-top:2rem;}
+  .recommend__head{display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;}
+  .recommend__head h4{font-size:1.02rem; margin:0;}
+  .quiz{display:none; margin-top:1.4rem;}
+  .quiz.is-open{display:block;}
+  .quiz__q{margin-bottom:1.1rem;}
+  .quiz__q p{font-size:0.92rem; color:var(--ink-soft); margin:0 0 0.5rem;}
+  .quiz__opts{display:flex; gap:0.6rem; flex-wrap:wrap;}
+  .qopt{font-size:0.85rem; padding:0.45rem 0.9rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft); cursor:pointer;}
+  .qopt.is-selected{border-color:var(--teal); color:var(--ink); background:rgba(79,128,121,0.1);}
+  .recommend__result{display:none; margin-top:1.2rem; padding-top:1.2rem; border-top:1px solid var(--rule-light); font-size:0.9rem; color:var(--ink-soft); line-height:1.7;}
+  .recommend__result.is-shown{display:block;}
+  .recommend__result strong{color:var(--ink);}
+
+  /* ---------- Step 3: Services ---------- */
+  .service-row{display:grid; grid-template-columns:1fr auto; gap:1.5rem; align-items:center; padding:1.6rem 0; border-bottom:1px solid var(--rule-light);}
+  .service-row__title{font-size:1.15rem; margin:0 0 0.3rem; font-weight:600;}
+  .service-row__tag{font-size:0.75rem; color:var(--sand-dark); text-transform:uppercase; letter-spacing:0.04em; margin-left:0.6rem;}
+  .service-row__desc{font-size:0.95rem; color:var(--ink-soft); margin:0; max-width:44ch;}
+  .services-note{font-size:0.85rem; color:var(--ink-soft); margin-top:1.6rem; max-width:52ch; font-style:italic;}
+
+  /* ---------- Step 4: Review ---------- */
+  .review-head{font-size:clamp(1.9rem,3vw,2.4rem); margin:0 0 1.2rem;}
+  .review-body{font-size:1.02rem; color:var(--ink-soft); line-height:1.72; max-width:56ch; margin:0 0 2.2rem;}
+  .review-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:2rem; margin-bottom:2.5rem;}
+  .review-col h4{font-size:0.85rem; color:var(--sand-dark); text-transform:uppercase; letter-spacing:0.04em; margin:0 0 0.8rem;}
+  .review-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.5rem; font-size:0.95rem;}
+  .review-col li{color:var(--ink-soft);}
+  .review-col .empty{font-style:italic; opacity:0.7;}
+  .personalize{background:var(--panel); border-radius:8px; padding:2rem; margin-bottom:2.5rem;}
+  .personalize h4{font-size:1rem; margin:0 0 1rem;}
+  .pill-group{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.6rem;}
+  .pill{font-size:0.87rem; padding:0.5rem 1rem; border-radius:999px; border:1px solid var(--rule-light); background:var(--bg-light); color:var(--ink-soft); cursor:pointer;}
+  .pill.is-selected{border-color:var(--teal); color:var(--ink); background:rgba(79,128,121,0.12);}
+  .review-actions{display:flex; gap:1.2rem; flex-wrap:wrap;}
+
+  /* ---------- Summary sidebar ---------- */
+  .summary{position:sticky; top:2rem; border:1px solid var(--rule-light); border-radius:8px; padding:1.8rem;}
+  .summary h3{font-size:1.05rem; margin:0 0 1.4rem;}
+  .summary__group{margin-bottom:1.4rem;}
+  .summary__group h5{font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--sand-dark); margin:0 0 0.6rem;}
+  .summary__item{display:flex; justify-content:space-between; align-items:center; gap:0.6rem; font-size:0.88rem; padding:0.4rem 0; color:var(--ink);}
+  .summary__item button{background:none; border:none; color:var(--ink-soft); font-size:0.78rem; cursor:pointer; text-decoration:underline; padding:0;}
+  .summary__empty{font-size:0.85rem; color:var(--ink-soft); font-style:italic;}
+  .summary__total{border-top:1px solid var(--rule-light); padding-top:1.2rem; margin-top:0.6rem; font-size:0.95rem;}
+  .summary__total b{display:block; font-size:1rem; margin-top:0.2rem;}
+  .conn-flow{margin-top:1.6rem; padding-top:1.4rem; border-top:1px solid var(--rule-light);}
+  .conn-flow h5{font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; color:var(--sand-dark); margin:0 0 0.8rem;}
+  .conn-node{display:flex; align-items:center; gap:0.6rem; font-size:0.82rem; color:var(--ink-soft); padding:0.3rem 0; opacity:0.45; transition:opacity .3s ease, color .3s ease;}
+  .conn-node.is-live{opacity:1; color:var(--ink);}
+  .conn-dot{width:7px; height:7px; border-radius:50%; background:var(--rule-light); flex-shrink:0; transition:background .3s ease;}
+  .conn-node.is-live .conn-dot{background:var(--teal);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .intro__grid{grid-template-columns:1fr;}
+    .intro__robot{order:-1; max-width:260px;}
+    .robot-stage, .sensor-stage{grid-template-columns:1fr;}
+    .config-grid{grid-template-columns:1fr;}
+    .summary{position:relative; top:0;}
+    .review-grid{grid-template-columns:1fr;}
+    .step-nav{overflow-x:auto;}
+  }
+  @media (max-width:600px){ section{padding:3.5rem 0;} }
+</style>
+</head>
+<body>
+
+<!-- ================= INTRO ================= -->
+<header class="intro">
+  <div class="wrap intro__grid">
+    <div class="reveal">
+      <h1 class="intro__headline display" data-en="Build your care system." data-ar="ابنِ نظام الرعاية بتاعك.">Build your care system.</h1>
+      <p class="intro__sub" data-en="Choose the technology, sensors, and services that fit your loved one's home and daily needs." data-ar="اختار التكنولوجيا والحساسات والخدمات اللي تناسب بيت وحياة اللي بتحبهم اليومية.">Choose the technology, sensors, and services that fit your loved one's home and daily needs.</p>
+      <p class="intro__note" data-en="Start with the robot. Add only what you need." data-ar="ابدأ بالروبوت. ضيف بس اللي محتاجه.">Start with the robot. Add only what you need.</p>
+      <div class="intro__actions">
+        <a class="btn btn-primary" href="#configurator" data-en="Start Building" data-ar="ابدأ البناء">Start Building</a>
+        <a class="btn btn-outline" href="#how" data-en="See How It Works" data-ar="شوف إزاي بيشتغل">See How It Works</a>
+      </div>
+    </div>
+    <svg class="intro__robot reveal" viewBox="-90 -290 180 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ robot.">
+      <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.14"/>
+      <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="#3A3D30"/>
+      <ellipse cx="34" cy="-6" rx="15" ry="9" fill="#3A3D30"/>
+      <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="#D8D6CF"/>
+      <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="#F0EEE7"/>
+      <g fill="#B7B4AB"><circle cx="-10" cy="-118" r="3"/><circle cx="0" cy="-116" r="3"/><circle cx="10" cy="-118" r="3"/></g>
+      <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#E7E5DC"/>
+      <circle cx="0" cy="-206" r="66" fill="#F4F2EC"/>
+      <rect x="-48" y="-232" width="96" height="52" rx="26" fill="#20231F"/>
+      <rect x="-30" y="-212" width="60" height="12" rx="6" fill="#4F8079" class="robot-light"/>
+    </svg>
+  </div>
+</header>
+
+<!-- ================= MINI HOW IT WORKS ================= -->
+<section class="mini-flow" id="how">
+  <div class="wrap">
+    <hr class="eyebrow-rule">
+    <h2 class="display" style="font-size:clamp(1.6rem,2.4vw,2rem); max-width:20ch; margin:0 0 2.2rem;" data-en="Choose → Visualize → Personalize → Review → Purchase" data-ar="اختار ← تخيل ← خصص ← راجع ← اشترِ">Choose → Visualize → Personalize → Review → Purchase</h2>
+    <div class="flow">
+      <div class="flow__node"><span class="flow__num">1</span><p class="flow__title" data-en="Pick your robot" data-ar="اختار روبوتك">Pick your robot</p></div>
+      <div class="flow__node"><span class="flow__num">2</span><p class="flow__title" data-en="Add the sensors you need" data-ar="ضيف الحساسات اللي محتاجها">Add the sensors you need</p></div>
+      <div class="flow__node"><span class="flow__num">3</span><p class="flow__title" data-en="Add optional services" data-ar="ضيف خدمات اختيارية">Add optional services</p></div>
+      <div class="flow__node"><span class="flow__num">4</span><p class="flow__title" data-en="Review your system" data-ar="راجع نظامك">Review your system</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONFIGURATOR ================= -->
+<section class="configurator wrap" id="configurator">
+  <div class="step-nav" id="stepNav">
+    <button class="step-tab is-active" data-step="0"><span class="step-tab__num display">01</span><span class="step-tab__label" data-en="Robot" data-ar="الروبوت">Robot</span></button>
+    <button class="step-tab" data-step="1"><span class="step-tab__num display">02</span><span class="step-tab__label" data-en="Sensors" data-ar="الحساسات">Sensors</span></button>
+    <button class="step-tab" data-step="2"><span class="step-tab__num display">03</span><span class="step-tab__label" data-en="Services" data-ar="الخدمات">Services</span></button>
+    <button class="step-tab" data-step="3"><span class="step-tab__num display">04</span><span class="step-tab__label" data-en="Review" data-ar="المراجعة">Review</span></button>
+  </div>
+
+  <div class="config-grid">
+    <div>
+      <!-- STEP 0: ROBOT -->
+      <div class="step-panel is-active" data-panel="0">
+        <div class="robot-stage">
+          <div>
+            <div class="robot-canvas">
+              <div class="robot-canvas__wrap" id="robotWrap">
+                <svg viewBox="-90 -290 180 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ElderGuardian+ robot, interactive view">
+                  <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.14"/>
+                  <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="#3A3D30"/>
+                  <ellipse cx="34" cy="-6" rx="15" ry="9" fill="#3A3D30"/>
+                  <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="#D8D6CF"/>
+                  <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="#F0EEE7"/>
+                  <g fill="#B7B4AB"><circle cx="-10" cy="-118" r="3"/><circle cx="0" cy="-116" r="3"/><circle cx="10" cy="-118" r="3"/></g>
+                  <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#E7E5DC"/>
+                  <circle cx="0" cy="-206" r="66" fill="#F4F2EC"/>
+                  <rect x="-48" y="-232" width="96" height="52" rx="26" fill="#20231F"/>
+                  <rect x="-30" y="-212" width="60" height="12" rx="6" fill="#4F8079" class="robot-light"/>
+                </svg>
+              </div>
+            </div>
+            <div class="robot-controls">
+              <button class="view-btn is-active" data-view="front" data-en="Front" data-ar="الأمام">Front</button>
+              <button class="view-btn" data-view="side" data-en="Side" data-ar="الجانب">Side</button>
+              <button class="view-btn" data-view="back" data-en="Back" data-ar="الخلف">Back</button>
+              <button class="view-btn" data-view="top" data-en="Top" data-ar="من فوق">Top</button>
+            </div>
+            <div class="robot-rotate">
+              <span data-en="Rotate" data-ar="دوران">Rotate</span>
+              <input type="range" min="0" max="360" value="0" id="robotRotate">
+            </div>
+          </div>
+          <div class="robot-info">
+            <h3 class="display" data-en="ElderGuardian+ Robot" data-ar="روبوت إلدر جارديان+">ElderGuardian+ Robot</h3>
+            <p data-en="Your intelligent companion for safer, more independent living." data-ar="رفيقك الذكي لحياة أأمن وأكتر استقلالية.">Your intelligent companion for safer, more independent living.</p>
+            <ul class="cap-list">
+              <li data-en="Indoor autonomous mobility" data-ar="حركة ذاتية جوه البيت">Indoor autonomous mobility</li>
+              <li data-en="Voice interaction" data-ar="تفاعل صوتي">Voice interaction</li>
+              <li data-en="Medication reminders" data-ar="تذكير بالأدوية">Medication reminders</li>
+              <li data-en="Family communication" data-ar="تواصل مع العيلة">Family communication</li>
+              <li data-en="Emergency assistance" data-ar="مساعدة في الطوارئ">Emergency assistance</li>
+              <li data-en="Environmental sensing" data-ar="استشعار بيئي">Environmental sensing</li>
+              <li data-en="Smart sensor integration" data-ar="تكامل مع الحساسات الذكية">Smart sensor integration</li>
+            </ul>
+            <button class="select-btn" id="chooseRobotBtn" data-en="Choose Robot" data-ar="اختار الروبوت">Choose Robot</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1: SENSORS -->
+      <div class="step-panel" data-panel="1">
+        <div class="sensor-stage">
+          <div class="scene-box">
+            <svg class="scene-svg" viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simplified bedroom plan that fills in with sensor markers as you add each sensor to your system.">
+              <g fill="none" stroke="#B9C0B7" stroke-width="2"><rect x="40" y="40" width="640" height="400" rx="4"/></g>
+              <line x1="400" y1="40" x2="520" y2="40" stroke="#8A8168" stroke-width="5"/>
+              <path d="M680,440 A60,60 0 0 0 680,380" stroke="#C9C4B4" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/>
+              <rect x="80" y="80" width="180" height="260" rx="8" fill="#EDE6D6" stroke="#B79E77" stroke-width="1.5"/>
+              <rect x="94" y="94" width="152" height="46" rx="8" fill="#F5F0E4"/>
+              <rect x="270" y="80" width="56" height="56" rx="6" fill="#E4DCC7" stroke="#C9BBA0" stroke-width="1.5"/>
+              <g id="sceneRobot" transform="translate(400,340) scale(0.4)" opacity="0.25">
+                <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.1"/>
+                <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="#D8D6CF"/>
+                <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="#FFFFFF"/>
+                <circle cx="0" cy="-206" r="66" fill="#FFFFFF"/>
+                <rect x="-48" y="-232" width="96" height="52" rx="26" fill="#20231F"/>
+                <rect x="-30" y="-212" width="60" height="12" rx="6" fill="#4F8079"/>
+              </g>
+              <g class="sensor-mark" data-mark="bed" transform="translate(170,210)"><rect x="-16" y="-16" width="32" height="32" rx="9" fill="#F5F3EE" stroke="#4F8079" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="#4F8079"/></g>
+              <g class="sensor-mark" data-mark="motion" transform="translate(660,60)"><rect x="-16" y="-16" width="32" height="32" rx="9" fill="#F5F3EE" stroke="#4F8079" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="#4F8079"/></g>
+              <g class="sensor-mark" data-mark="door" transform="translate(650,410)"><rect x="-16" y="-16" width="32" height="32" rx="9" fill="#F5F3EE" stroke="#4F8079" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="#4F8079"/></g>
+              <g class="sensor-mark" data-mark="temperature" transform="translate(460,55)"><rect x="-16" y="-16" width="32" height="32" rx="9" fill="#F5F3EE" stroke="#4F8079" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="#4F8079"/></g>
+              <g class="sensor-mark" data-mark="sos" transform="translate(295,105)"><rect x="-16" y="-16" width="32" height="32" rx="9" fill="#F5F3EE" stroke="#B7854F" stroke-width="1.5"/><circle cx="0" cy="0" r="4" fill="#B7854F"/></g>
+            </svg>
+          </div>
+          <div>
+            <div class="sensor-row">
+              <div class="sensor-row__icon">🛏</div>
+              <div><p class="sensor-row__title" data-en="Bed / Pressure Sensor" data-ar="حساس السرير / الضغط">Bed / Pressure Sensor</p><p class="sensor-row__desc" data-en="Bed occupancy, sleep and activity patterns, unusual inactivity." data-ar="إشغال السرير، وأنماط النوم والنشاط، والخمول الغير طبيعي.">Bed occupancy, sleep and activity patterns, unusual inactivity.</p></div>
+              <button class="add-btn" data-sensor="bed" data-en="Add" data-ar="ضيف">Add</button>
+            </div>
+            <div class="sensor-row">
+              <div class="sensor-row__icon">◌</div>
+              <div><p class="sensor-row__title" data-en="Motion / PIR Sensor" data-ar="حساس الحركة / PIR">Motion / PIR Sensor</p><p class="sensor-row__desc" data-en="Movement detection, room activity, activity patterns." data-ar="اكتشاف الحركة، ونشاط الأوضة، وأنماط النشاط.">Movement detection, room activity, activity patterns.</p></div>
+              <button class="add-btn" data-sensor="motion" data-en="Add" data-ar="ضيف">Add</button>
+            </div>
+            <div class="sensor-row">
+              <div class="sensor-row__icon">▯</div>
+              <div><p class="sensor-row__title" data-en="Door Sensor" data-ar="حساس الباب">Door Sensor</p><p class="sensor-row__desc" data-en="Door opening and closing, entry and exit activity." data-ar="فتح وقفل الباب، ونشاط الدخول والخروج.">Door opening and closing, entry and exit activity.</p></div>
+              <button class="add-btn" data-sensor="door" data-en="Add" data-ar="ضيف">Add</button>
+            </div>
+            <div class="sensor-row">
+              <div class="sensor-row__icon">≋</div>
+              <div><p class="sensor-row__title" data-en="Temperature Sensor" data-ar="حساس درجة الحرارة">Temperature Sensor</p><p class="sensor-row__desc" data-en="Room temperature and environmental monitoring." data-ar="درجة حرارة الأوضة والمراقبة البيئية.">Room temperature and environmental monitoring.</p></div>
+              <button class="add-btn" data-sensor="temperature" data-en="Add" data-ar="ضيف">Add</button>
+            </div>
+            <div class="sensor-row">
+              <div class="sensor-row__icon">!</div>
+              <div><p class="sensor-row__title" data-en="Emergency / SOS Button" data-ar="زرار الطوارئ / نداء استغاثة">Emergency / SOS Button</p><p class="sensor-row__desc" data-en="Manual emergency alerts and immediate assistance requests." data-ar="تنبيهات طوارئ يدوية وطلبات مساعدة فورية.">Manual emergency alerts and immediate assistance requests.</p></div>
+              <button class="add-btn" data-sensor="sos" data-en="Add" data-ar="ضيف">Add</button>
+            </div>
+
+            <div class="recommend">
+              <div class="recommend__head">
+                <h4 data-en="Not sure what you need?" data-ar="مش متأكد محتاج إيه؟">Not sure what you need?</h4>
+                <button class="btn btn-outline" id="helpMeChoose" style="padding:0.5rem 1rem; font-size:0.85rem;" data-en="Help me choose" data-ar="ساعدني أختار">Help me choose</button>
+              </div>
+              <div class="quiz" id="quizPanel">
+                <div class="quiz__q">
+                  <p data-en="Does the person live alone?" data-ar="الشخص عايش لوحده؟">Does the person live alone?</p>
+                  <div class="quiz__opts"><button class="qopt" data-q="alone" data-v="yes" data-en="Yes" data-ar="أيوة">Yes</button><button class="qopt" data-q="alone" data-v="no" data-en="No" data-ar="لأ">No</button></div>
+                </div>
+                <div class="quiz__q">
+                  <p data-en="Do you want sleep / activity monitoring?" data-ar="عايز مراقبة النوم / النشاط؟">Do you want sleep / activity monitoring?</p>
+                  <div class="quiz__opts"><button class="qopt" data-q="sleep" data-v="yes" data-en="Yes" data-ar="أيوة">Yes</button><button class="qopt" data-q="sleep" data-v="no" data-en="No" data-ar="لأ">No</button></div>
+                </div>
+                <div class="quiz__q">
+                  <p data-en="Do you want room / environment monitoring?" data-ar="عايز مراقبة الأوضة / البيئة؟">Do you want room / environment monitoring?</p>
+                  <div class="quiz__opts"><button class="qopt" data-q="room" data-v="yes" data-en="Yes" data-ar="أيوة">Yes</button><button class="qopt" data-q="room" data-v="no" data-en="No" data-ar="لأ">No</button></div>
+                </div>
+                <div class="quiz__q">
+                  <p data-en="Do you want additional emergency protection?" data-ar="عايز حماية إضافية للطوارئ؟">Do you want additional emergency protection?</p>
+                  <div class="quiz__opts"><button class="qopt" data-q="emergency" data-v="yes" data-en="Yes" data-ar="أيوة">Yes</button><button class="qopt" data-q="emergency" data-v="no" data-en="No" data-ar="لأ">No</button></div>
+                </div>
+                <button class="btn btn-primary" id="getRecommendation" style="padding:0.6rem 1.1rem; font-size:0.88rem;" data-en="Get Recommendation" data-ar="اعرف الاقتراح">Get Recommendation</button>
+              </div>
+              <div class="recommend__result" id="recommendResult"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: SERVICES -->
+      <div class="step-panel" data-panel="2">
+        <div class="service-row">
+          <div><span class="service-row__title" data-en="Installation" data-ar="التركيب">Installation</span><span class="service-row__tag" data-en="Optional" data-ar="اختياري">Optional</span><p class="service-row__desc" data-en="Professional installation and system setup." data-ar="تركيب احترافي وإعداد للنظام.">Professional installation and system setup.</p></div>
+          <button class="add-btn" data-service="installation" data-en="Add Installation" data-ar="ضيف التركيب">Add Installation</button>
+        </div>
+        <div class="service-row">
+          <div><span class="service-row__title" data-en="Maintenance" data-ar="الصيانة">Maintenance</span><span class="service-row__tag" data-en="Optional" data-ar="اختياري">Optional</span><p class="service-row__desc" data-en="Keep your ElderGuardian+ system operating reliably with maintenance support." data-ar="خلي نظام إلدر جارديان+ بتاعك شغال بثبات مع دعم الصيانة.">Keep your ElderGuardian+ system operating reliably with maintenance support.</p></div>
+          <button class="add-btn" data-service="maintenance" data-en="Add Maintenance" data-ar="ضيف الصيانة">Add Maintenance</button>
+        </div>
+        <div class="service-row">
+          <div><span class="service-row__title" data-en="Doctor Monitoring" data-ar="متابعة دكتور">Doctor Monitoring</span><span class="service-row__tag" data-en="Optional" data-ar="اختياري">Optional</span><p class="service-row__desc" data-en="Optional professional monitoring through the ElderGuardian+ doctor platform." data-ar="متابعة احترافية اختيارية من خلال منصة الدكاترة بتاعة إلدر جارديان+.">Optional professional monitoring through the ElderGuardian+ doctor platform.</p></div>
+          <button class="add-btn" data-service="doctor" data-en="Add Doctor Monitoring" data-ar="ضيف متابعة دكتور">Add Doctor Monitoring</button>
+        </div>
+        <p class="services-note" data-en="ElderGuardian+ services support daily care and monitoring. They do not replace emergency medical services or professional medical care." data-ar="خدمات إلدر جارديان+ بتدعم الرعاية والمتابعة اليومية. مبتحلش محل خدمات الطوارئ الطبية أو الرعاية الطبية المتخصصة.">ElderGuardian+ services support daily care and monitoring. They do not replace emergency medical services or professional medical care.</p>
+      </div>
+
+      <!-- STEP 3: REVIEW -->
+      <div class="step-panel" data-panel="3">
+        <h2 class="review-head display" data-en="Your care system is ready." data-ar="نظام الرعاية بتاعك جاهز.">Your care system is ready.</h2>
+        <p class="review-body" data-en="Your system combines intelligent robotics, privacy-first sensors, and optional care services into one connected ecosystem." data-ar="نظامك بيجمع بين روبوتات ذكية، وحساسات بتراعي الخصوصية، وخدمات رعاية اختيارية في منظومة واحدة متصلة.">Your system combines intelligent robotics, privacy-first sensors, and optional care services into one connected ecosystem.</p>
+        <div class="review-grid">
+          <div class="review-col"><h4 data-en="Robot" data-ar="الروبوت">Robot</h4><ul id="reviewRobot"></ul></div>
+          <div class="review-col"><h4 data-en="Sensors" data-ar="الحساسات">Sensors</h4><ul id="reviewSensors"></ul></div>
+          <div class="review-col"><h4 data-en="Services" data-ar="الخدمات">Services</h4><ul id="reviewServices"></ul></div>
+        </div>
+        <div class="personalize">
+          <h4 data-en="Who is this system for?" data-ar="النظام ده لمين؟">Who is this system for?</h4>
+          <div class="pill-group" id="whoGroup">
+            <button class="pill" data-who="Parent" data-en="Parent" data-ar="الوالد/ة">Parent</button>
+            <button class="pill" data-who="Grandparent" data-en="Grandparent" data-ar="الجد/ة">Grandparent</button>
+            <button class="pill" data-who="Loved one" data-en="Loved one" data-ar="حد بتحبه">Loved one</button>
+            <button class="pill" data-who="Other" data-en="Other" data-ar="حاجة تانية">Other</button>
+          </div>
+          <h4><span data-en="What matters most?" data-ar="إيه أهم حاجة؟">What matters most?</span> <span style="font-weight:400; color:var(--ink-soft); font-size:0.85rem;" data-en="(optional)" data-ar="(اختياري)">(optional)</span></h4>
+          <div class="pill-group" id="prioGroup">
+            <button class="pill" data-prio="Safety" data-en="Safety" data-ar="الأمان">Safety</button>
+            <button class="pill" data-prio="Independence" data-en="Independence" data-ar="الاستقلالية">Independence</button>
+            <button class="pill" data-prio="Activity awareness" data-en="Activity awareness" data-ar="متابعة النشاط">Activity awareness</button>
+            <button class="pill" data-prio="Family connection" data-en="Family connection" data-ar="التواصل مع العيلة">Family connection</button>
+            <button class="pill" data-prio="Emergency assistance" data-en="Emergency assistance" data-ar="مساعدة الطوارئ">Emergency assistance</button>
+          </div>
+        </div>
+        <div class="review-actions">
+          <a class="btn btn-primary" href="#" data-en="Continue to Checkout" data-ar="كمّل للدفع">Continue to Checkout</a>
+          <button class="btn btn-outline" id="editSystemBtn" data-en="Edit System" data-ar="عدّل النظام">Edit System</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- SUMMARY SIDEBAR ---------- -->
+    <aside class="summary">
+      <h3 class="display" data-en="Your ElderGuardian+ System" data-ar="نظام إلدر جارديان+ بتاعك">Your ElderGuardian+ System</h3>
+      <div class="summary__group">
+        <h5 data-en="Robot" data-ar="الروبوت">Robot</h5>
+        <div id="summaryRobot"><p class="summary__empty" data-en="Not yet selected" data-ar="لسه ما اتاخدش">Not yet selected</p></div>
+      </div>
+      <div class="summary__group">
+        <h5 data-en="Sensors" data-ar="الحساسات">Sensors</h5>
+        <div id="summarySensors"><p class="summary__empty" data-en="None added" data-ar="مفيش حاجة اتضافت">None added</p></div>
+      </div>
+      <div class="summary__group">
+        <h5 data-en="Services" data-ar="الخدمات">Services</h5>
+        <div id="summaryServices"><p class="summary__empty" data-en="None added" data-ar="مفيش حاجة اتضافت">None added</p></div>
+      </div>
+      <div class="summary__total">
+        <span data-en="Estimated total" data-ar="التقدير الإجمالي">Estimated total</span>
+        <b data-en="Price calculated at checkout" data-ar="السعر بيتحدد وقت الدفع">Price calculated at checkout</b>
+      </div>
+      <div class="conn-flow">
+        <h5 data-en="How it connects" data-ar="إزاي بيتصل">How it connects</h5>
+        <div class="conn-node" data-conn="sensors"><span class="conn-dot"></span><span data-en="Sensors" data-ar="الحساسات">Sensors</span></div>
+        <div class="conn-node" data-conn="robot"><span class="conn-dot"></span><span data-en="ElderGuardian+ Robot / ESP32" data-ar="روبوت إلدر جارديان+ / ESP32">ElderGuardian+ Robot / ESP32</span></div>
+        <div class="conn-node" data-conn="robot"><span class="conn-dot"></span><span data-en="Wi-Fi" data-ar="واي فاي">Wi-Fi</span></div>
+        <div class="conn-node" data-conn="robot"><span class="conn-dot"></span><span data-en="ElderGuardian+ Platform" data-ar="منصة إلدر جارديان+">ElderGuardian+ Platform</span></div>
+        <div class="conn-node" data-conn="robot"><span class="conn-dot"></span><span data-en="AI Activity Analysis" data-ar="تحليل النشاط بالذكاء الاصطناعي">AI Activity Analysis</span></div>
+        <div class="conn-node" data-conn="robot"><span class="conn-dot"></span><span data-en="Family App / Doctor Platform" data-ar="تطبيق العيلة / منصة الدكتور">Family App / Doctor Platform</span></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  // ---------- Reveal on scroll ----------
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-in'); io.unobserve(entry.target); } });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => io.observe(el));
+
+  // ---------- State ----------
+  const state = {
+    robot: false,
+    sensors: new Set(),
+    services: new Set(),
+    who: null,
+    priorities: new Set(),
+    step: 0
+  };
+
+  let currentLang = 'en';
+
+  const SENSOR_NAMES = {
+    en: { bed:"Bed / Pressure Sensor", motion:"Motion / PIR Sensor", door:"Door Sensor", temperature:"Temperature Sensor", sos:"Emergency / SOS Button" },
+    ar: { bed:"حساس السرير / الضغط", motion:"حساس الحركة / PIR", door:"حساس الباب", temperature:"حساس درجة الحرارة", sos:"زرار الطوارئ / نداء استغاثة" }
+  };
+  const SERVICE_NAMES = {
+    en: { installation:"Installation", maintenance:"Maintenance", doctor:"Doctor Monitoring" },
+    ar: { installation:"التركيب", maintenance:"الصيانة", doctor:"متابعة دكتور" }
+  };
+  const SERVICE_ADD_LABELS = {
+    en: { installation:"Add Installation", maintenance:"Add Maintenance", doctor:"Add Doctor Monitoring" },
+    ar: { installation:"ضيف التركيب", maintenance:"ضيف الصيانة", doctor:"ضيف متابعة دكتور" }
+  };
+  const UI = {
+    en: {
+      chooseRobot:"Choose Robot", robotSelected:"✓ Robot Selected",
+      add:"Add", added:"✓ Added",
+      notYetSelected:"Not yet selected", noneAdded:"None added",
+      remove:"Remove", robotSummaryLabel:"✓ ElderGuardian+ Robot",
+      robotReviewLabel:"ElderGuardian+ Robot",
+      recommendedSetup:"Recommended setup:",
+      recommendedNote:"Recommended based on the needs you selected. This isn't a medical diagnosis, and you can add or remove anything below."
+    },
+    ar: {
+      chooseRobot:"اختار الروبوت", robotSelected:"✓ الروبوت متاخد",
+      add:"ضيف", added:"✓ اتضاف",
+      notYetSelected:"لسه ما اتاخدش", noneAdded:"مفيش حاجة اتضافت",
+      remove:"شيل", robotSummaryLabel:"✓ روبوت إلدر جارديان+",
+      robotReviewLabel:"روبوت إلدر جارديان+",
+      recommendedSetup:"الاقتراح المناسب:",
+      recommendedNote:"الاقتراح ده على حسب احتياجاتك اللي اخترتها. ده مش تشخيص طبي، وتقدر تضيف أو تشيل أي حاجة تحت."
+    }
+  };
+
+  // ---------- Step navigation ----------
+  const stepTabs = document.querySelectorAll('.step-tab');
+  const stepPanels = document.querySelectorAll('.step-panel');
+  function goToStep(n){
+    state.step = n;
+    stepTabs.forEach(t => t.classList.toggle('is-active', +t.dataset.step === n));
+    stepTabs.forEach(t => t.classList.toggle('is-done', +t.dataset.step < n));
+    stepPanels.forEach(p => p.classList.toggle('is-active', +p.dataset.panel === n));
+    document.getElementById('configurator').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  stepTabs.forEach(t => t.addEventListener('click', () => goToStep(+t.dataset.step)));
+  document.getElementById('editSystemBtn').addEventListener('click', () => goToStep(0));
+
+  // ---------- Robot viewer ----------
+  const robotWrap = document.getElementById('robotWrap');
+  const robotRotate = document.getElementById('robotRotate');
+  let robotZoom = 1;
+  robotRotate.addEventListener('input', applyRobotTransform);
+  function applyRobotTransform(){
+    const rad = robotRotate.value * Math.PI / 180;
+    robotWrap.style.transform = `scaleX(${Math.cos(rad)}) scale(${robotZoom})`;
+  }
+  document.querySelectorAll('.robot-controls .view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.robot-controls .view-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      robotRotate.value = { front:0, side:90, back:180, top:270 }[btn.dataset.view];
+      applyRobotTransform();
+    });
+  });
+
+  document.getElementById('chooseRobotBtn').addEventListener('click', (e) => {
+    state.robot = !state.robot;
+    render();
+  });
+
+  // ---------- Sensors ----------
+  document.querySelectorAll('.add-btn[data-sensor]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const s = btn.dataset.sensor;
+      if (state.sensors.has(s)) state.sensors.delete(s); else state.sensors.add(s);
+      render();
+    });
+  });
+
+  // ---------- Services ----------
+  document.querySelectorAll('.add-btn[data-service]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const s = btn.dataset.service;
+      if (state.services.has(s)) state.services.delete(s); else state.services.add(s);
+      render();
+    });
+  });
+
+  // ---------- Recommendation quiz ----------
+  const quizAnswers = {};
+  document.getElementById('helpMeChoose').addEventListener('click', () => {
+    document.getElementById('quizPanel').classList.toggle('is-open');
+  });
+  document.querySelectorAll('.qopt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      document.querySelectorAll(`.qopt[data-q="${q}"]`).forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      quizAnswers[q] = btn.dataset.v;
+    });
+  });
+  document.getElementById('getRecommendation').addEventListener('click', () => {
+    const rec = new Set();
+    if (quizAnswers.sleep === 'yes') rec.add('bed');
+    if (quizAnswers.room === 'yes') { rec.add('motion'); rec.add('temperature'); }
+    if (quizAnswers.alone === 'yes') { rec.add('door'); rec.add('sos'); }
+    if (quizAnswers.emergency === 'yes') rec.add('sos');
+    if (rec.size === 0) { rec.add('motion'); rec.add('door'); }
+    rec.forEach(s => state.sensors.add(s));
+    const names = [...rec].map(s => SENSOR_NAMES[currentLang][s]).join(', ');
+    const result = document.getElementById('recommendResult');
+    result.classList.add('is-shown');
+    result.innerHTML = `<strong>${UI[currentLang].recommendedSetup}</strong> ${names}.<br>${UI[currentLang].recommendedNote}`;
+    render();
+  });
+
+  // ---------- Personalization ----------
+  document.querySelectorAll('#whoGroup .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#whoGroup .pill').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+      state.who = btn.dataset.who;
+    });
+  });
+  document.querySelectorAll('#prioGroup .pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('is-selected');
+      const p = btn.dataset.prio;
+      if (state.priorities.has(p)) state.priorities.delete(p); else state.priorities.add(p);
+    });
+  });
+
+  // ---------- Render ----------
+  function removeSensor(s){ state.sensors.delete(s); render(); }
+  function removeService(s){ state.services.delete(s); render(); }
+  function removeRobot(){ state.robot = false; render(); }
+  window.removeSensor = removeSensor; window.removeService = removeService; window.removeRobot = removeRobot;
+
+  function render(){
+    // robot select button + scene robot
+    const chooseBtn = document.getElementById('chooseRobotBtn');
+    chooseBtn.textContent = state.robot ? UI[currentLang].robotSelected : UI[currentLang].chooseRobot;
+    chooseBtn.classList.toggle('is-selected', state.robot);
+    document.getElementById('sceneRobot').setAttribute('opacity', state.robot ? '1' : '0.25');
+
+    // sensor add buttons + scene marks
+    document.querySelectorAll('.add-btn[data-sensor]').forEach(btn => {
+      const on = state.sensors.has(btn.dataset.sensor);
+      btn.textContent = on ? UI[currentLang].added : UI[currentLang].add;
+      btn.classList.toggle('is-added', on);
+    });
+    document.querySelectorAll('.sensor-mark').forEach(mark => {
+      mark.classList.toggle('is-on', state.sensors.has(mark.dataset.mark));
+    });
+
+    // service add buttons
+    document.querySelectorAll('.add-btn[data-service]').forEach(btn => {
+      const on = state.services.has(btn.dataset.service);
+      btn.textContent = on ? UI[currentLang].added : SERVICE_ADD_LABELS[currentLang][btn.dataset.service];
+      btn.classList.toggle('is-added', on);
+    });
+
+    // summary sidebar
+    const sr = document.getElementById('summaryRobot');
+    sr.innerHTML = state.robot
+      ? `<div class="summary__item"><span>${UI[currentLang].robotSummaryLabel}</span><button onclick="removeRobot()">${UI[currentLang].remove}</button></div>`
+      : `<p class="summary__empty">${UI[currentLang].notYetSelected}</p>`;
+
+    const ss = document.getElementById('summarySensors');
+    ss.innerHTML = state.sensors.size
+      ? [...state.sensors].map(s => `<div class="summary__item"><span>✓ ${SENSOR_NAMES[currentLang][s]}</span><button onclick="removeSensor('${s}')">${UI[currentLang].remove}</button></div>`).join('')
+      : `<p class="summary__empty">${UI[currentLang].noneAdded}</p>`;
+
+    const sv = document.getElementById('summaryServices');
+    sv.innerHTML = state.services.size
+      ? [...state.services].map(s => `<div class="summary__item"><span>✓ ${SERVICE_NAMES[currentLang][s]}</span><button onclick="removeService('${s}')">${UI[currentLang].remove}</button></div>`).join('')
+      : `<p class="summary__empty">${UI[currentLang].noneAdded}</p>`;
+
+    // connection flow live state
+    document.querySelectorAll('.conn-node[data-conn="sensors"]').forEach(n => n.classList.toggle('is-live', state.sensors.size > 0));
+    document.querySelectorAll('.conn-node[data-conn="robot"]').forEach(n => n.classList.toggle('is-live', state.robot));
+
+    // review step
+    const rr = document.getElementById('reviewRobot');
+    rr.innerHTML = state.robot ? `<li>${UI[currentLang].robotReviewLabel}</li>` : `<li class="empty">${UI[currentLang].notYetSelected}</li>`;
+    const rs = document.getElementById('reviewSensors');
+    rs.innerHTML = state.sensors.size ? [...state.sensors].map(s => `<li>${SENSOR_NAMES[currentLang][s]}</li>`).join('') : `<li class="empty">${UI[currentLang].noneAdded}</li>`;
+    const rv = document.getElementById('reviewServices');
+    rv.innerHTML = state.services.size ? [...state.services].map(s => `<li>${SERVICE_NAMES[currentLang][s]}</li>`).join('') : `<li class="empty">${UI[currentLang].noneAdded}</li>`;
+  }
+
+  render();
+</script>
+
+<style>
+  .lang-toggle{position:fixed; top:1.2rem; right:1.2rem; z-index:80; display:flex; border:1px solid rgba(30,33,29,0.25); border-radius:999px; overflow:hidden; background:rgba(245,243,238,0.9); backdrop-filter:blur(6px); direction:ltr;}
+  .lang-toggle button{border:none; background:none; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'Public Sans',sans-serif; color:var(--ink-soft); cursor:pointer;}
+  .lang-toggle button.is-active{background:var(--teal); color:#0F1210; font-weight:600;}
+</style>
+<div class="lang-toggle">
+  <button type="button" data-lang="en" class="is-active">EN</button>
+  <button type="button" data-lang="ar">AR</button>
+</div>
+<script>
+  document.querySelectorAll('.lang-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      currentLang = lang;
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('is-active', b.dataset.lang === lang));
+      document.documentElement.setAttribute('lang', lang);
+      document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      document.title = lang === 'ar' ? 'إلدر جارديان+ — ابنِ نظام الرعاية' : 'ElderGuardian+ — Build Your Care System';
+      document.querySelectorAll('[data-en]').forEach(el => {
+        el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+      });
+      // refresh any already-shown quiz recommendation result
+      const result = document.getElementById('recommendResult');
+      if (result.classList.contains('is-shown')) {
+        const shownSensors = [...state.sensors].map(s => SENSOR_NAMES[currentLang][s]).join(', ');
+        result.innerHTML = `<strong>${UI[currentLang].recommendedSetup}</strong> ${shownSensors}.<br>${UI[currentLang].recommendedNote}`;
+      }
+      render();
+    });
+  });
+</script>
+
+</body>
+</html>

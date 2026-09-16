@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-light:#F5F3EE; --panel:#EDEAE0; --ink:#1E211D; --ink-soft:#4B4E48;
+    --teal:#4F8079; --teal-deep:#3E6560; --sand:#D8C9A9; --sand-dark:#B79E77;
+    --rule-light:rgba(30,33,29,0.14); --attn:#B7854F;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  button{font-family:inherit; cursor:pointer;}
+  input, select{font-family:inherit;}
+  a{color:inherit;}
+
+  .app{display:grid; grid-template-columns:220px 1fr; min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{background:var(--panel); border-right:1px solid var(--rule-light); display:flex; flex-direction:column; padding:1.6rem 1.2rem; position:sticky; top:0; height:100vh;}
+  .sidebar__logo{font-family:'Libre Caslon Display',serif; font-size:1.05rem; margin:0 0 2rem; padding-left:0.4rem;}
+  .sidebar__nav{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.1rem; flex:1; overflow-y:auto;}
+  .sidebar__nav a{display:block; padding:0.55rem 0.6rem; font-size:0.88rem; color:var(--ink-soft); text-decoration:none; border-left:2px solid transparent; border-radius:2px;}
+  .sidebar__nav a:hover{color:var(--ink);}
+  .sidebar__nav a.is-active{color:var(--ink); border-left-color:var(--teal); background:rgba(79,128,121,0.08); font-weight:600;}
+  .sidebar__user{display:flex; align-items:center; gap:0.6rem; padding:0.8rem 0.4rem; border-top:1px solid var(--rule-light); margin-top:0.6rem;}
+  .sidebar__user .avatar{width:30px; height:30px; font-size:0.75rem;}
+  .sidebar__user-name{font-size:0.85rem; font-weight:600;}
+  .sidebar__signout{background:none; border:none; color:var(--ink-soft); font-size:0.85rem; padding:0.5rem 0.4rem; text-align:left; width:100%;}
+  .sidebar__signout:hover{color:var(--important, #9C5A3C);}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:20; background:var(--bg-light); border-bottom:1px solid var(--rule-light); padding:1.1rem 2rem; display:flex; align-items:center; justify-content:space-between; gap:1.2rem;}
+  .topbar__title{font-size:1.05rem; font-weight:600;}
+  .topbar__right{display:flex; align-items:center; gap:1.2rem;}
+  .icon-btn{background:none; border:none; color:var(--ink-soft); font-size:1.1rem; padding:0.3rem; position:relative;}
+  .icon-btn:hover{color:var(--ink);}
+  .icon-dot{position:absolute; top:0; right:0; width:6px; height:6px; border-radius:50%; background:var(--attn);}
+  .elder-select{border:1px solid var(--rule-light); border-radius:5px; padding:0.45rem 0.85rem; font-size:0.86rem; background:none; color:var(--ink);}
+  .conn-status{display:flex; align-items:center; gap:0.4rem; font-size:0.84rem; color:var(--ink-soft);}
+  .conn-dot{width:7px; height:7px; border-radius:50%; background:var(--teal);}
+  .avatar{width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:600; flex-shrink:0;}
+
+  .content{padding:1.8rem 2rem 4rem; max-width:1200px; display:flex; flex-direction:column; gap:2.4rem;}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; font-size:0.9rem; font-weight:600; padding:0.7rem 1.3rem; border-radius:5px; border:1px solid transparent; transition:background .2s ease, border-color .2s ease, transform .15s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn-outline{background:transparent; color:var(--ink); border-color:var(--rule-light);}
+  .btn-outline:hover{border-color:var(--ink);}
+  .btn-text{background:none; border:none; color:var(--ink-soft); text-decoration:underline; padding:0; font-size:0.88rem;}
+  .btn-text:hover{color:var(--ink);}
+  .btn[disabled]{opacity:0.65; pointer-events:none;}
+
+  section.block{padding-top:1.4rem; border-top:1px solid var(--rule-light);}
+  section.block:first-of-type{border-top:none; padding-top:0;}
+  section.block h2{font-size:1.15rem; margin:0 0 1.2rem;}
+
+  /* ---------- Profile hero ---------- */
+  .hero-flex{display:flex; align-items:flex-start; justify-content:space-between; gap:2rem; flex-wrap:wrap;}
+  .hero-flex__left{display:flex; gap:1.2rem; align-items:flex-start;}
+  .hero-avatar{width:64px; height:64px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:600; flex-shrink:0;}
+  .hero-eyebrow{font-size:0.85rem; color:var(--ink-soft); margin:0 0 0.3rem;}
+  .hero-name{font-size:1.6rem; margin:0 0 0.2rem;}
+  .hero-role{font-size:0.9rem; color:var(--teal); font-weight:600; margin:0 0 0.5rem;}
+  .hero-tagline{font-size:0.92rem; color:var(--ink-soft); margin:0 0 0.6rem; font-style:italic;}
+  .hero-meta{font-size:0.85rem; color:var(--ink-soft); display:flex; gap:0.5rem; flex-wrap:wrap;}
+  .hero-meta span:not(:last-child)::after{content:"·"; margin-left:0.5rem; color:var(--rule-light);}
+  .hero-actions{display:flex; flex-direction:column; gap:0.6rem; align-items:flex-end;}
+
+  /* ---------- 3D visual ---------- */
+  .robot3d-card{background:radial-gradient(ellipse at 60% 40%, #F3F1EA 0%, #E4E0D3 100%); border-radius:8px; padding:1.2rem; display:flex; align-items:center; gap:2rem; flex-wrap:wrap;}
+  .robot3d-canvas{width:220px; height:220px; flex-shrink:0; position:relative; display:flex; align-items:center; justify-content:center;}
+  .robot3d-canvas canvas{display:block; width:100%; height:100%; cursor:grab; border-radius:6px;}
+  .robot3d-canvas canvas:active{cursor:grabbing;}
+  .robot3d-canvas .robot-hero-svg{width:auto; height:100%; max-width:100%; display:block; margin:0 auto;}
+  .robot3d-copy h3{margin:0 0 0.5rem; font-size:1.05rem;}
+  .robot3d-copy p{margin:0; font-size:0.9rem; color:var(--ink-soft); max-width:36ch; line-height:1.55;}
+  .robot3d-hint{font-size:0.78rem; color:var(--ink-soft); margin-top:0.6rem; opacity:0.8;}
+
+  /* ---------- Field rows ---------- */
+  .field-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.2rem 2rem;}
+  .field{display:flex; flex-direction:column; gap:0.3rem;}
+  .field label{font-size:0.8rem; color:var(--ink-soft);}
+  .field .view-value{font-size:0.96rem; color:var(--ink); padding:0.55rem 0;}
+  .field input, .field select{padding:0.6rem 0.75rem; border:1px solid var(--rule-light); border-radius:5px; font-size:0.92rem; color:var(--ink); display:none;}
+  .field input:focus, .field select:focus{outline:none; border-color:var(--ink);}
+  .personal-info.is-editing .view-value{display:none;}
+  .personal-info.is-editing input, .personal-info.is-editing select{display:block;}
+  .field-error{font-size:0.78rem; color:var(--attn); display:none;}
+  .field.has-error .field-error{display:block;}
+  .field.has-error input{border-color:var(--attn);}
+
+  .form-actions{display:flex; align-items:center; gap:1rem; margin-top:1.4rem;}
+  .save-success{font-size:0.85rem; color:var(--teal); display:none; align-items:center; gap:0.4rem;}
+  .save-success.is-shown{display:flex;}
+
+  /* ---------- Care relationship ---------- */
+  .relationship-row{display:flex; align-items:center; justify-content:space-between; gap:1.5rem; flex-wrap:wrap;}
+  .relationship-flow{display:flex; align-items:center; gap:0.7rem; font-size:0.85rem; color:var(--ink-soft); margin-bottom:1.2rem;}
+  .relationship-flow b{color:var(--ink);}
+  .elder-card{display:flex; gap:1rem; align-items:center;}
+  .elder-card .avatar{width:48px; height:48px; font-size:1.05rem; background:var(--sand-dark);}
+  .elder-card__meta{font-size:0.86rem; color:var(--ink-soft); display:flex; gap:0.5rem; flex-wrap:wrap;}
+  .elder-card__meta span:not(:last-child)::after{content:"·"; margin-left:0.5rem; color:var(--rule-light);}
+  .relationship-actions{display:flex; gap:0.7rem; flex-wrap:wrap;}
+
+  /* ---------- Connected system ---------- */
+  .system-grid{display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:center;}
+  .system-info-row{display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .system-info-row:last-of-type{border-bottom:none;}
+  .system-info-row span:first-child{color:var(--ink-soft);}
+  .system-actions{display:flex; gap:0.6rem; margin-top:1rem; flex-wrap:wrap;}
+
+  /* ---------- Toggle switch ---------- */
+  .toggle-row{display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid var(--rule-light);}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row__label{font-size:0.92rem;}
+  .toggle-row__sub{font-size:0.8rem; color:var(--ink-soft); margin-top:0.15rem;}
+  .switch{position:relative; width:42px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .switch__track{position:absolute; inset:0; background:#D8D4C6; border-radius:999px; transition:background .2s ease; cursor:pointer;}
+  .switch__thumb{position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s ease; box-shadow:0 1px 2px rgba(0,0,0,0.2);}
+  .switch input:checked + .switch__track{background:var(--teal);}
+  .switch input:checked + .switch__track .switch__thumb{transform:translateX(18px);}
+  .switch input:focus-visible + .switch__track{outline:2px solid var(--teal); outline-offset:2px;}
+
+  /* ---------- Privacy tags ---------- */
+  .privacy-tags{display:flex; flex-wrap:wrap; gap:0.6rem; margin:1rem 0 1.4rem;}
+  .privacy-tags span{font-size:0.8rem; color:var(--ink-soft); border:1px solid var(--rule-light); border-radius:4px; padding:0.3rem 0.7rem;}
+
+  /* ---------- Security ---------- */
+  .security-row{display:flex; justify-content:space-between; align-items:center; padding:0.85rem 0; border-bottom:1px solid var(--rule-light);}
+  .security-row:last-child{border-bottom:none;}
+  .security-row__label{font-size:0.92rem;}
+  .security-row__sub{font-size:0.8rem; color:var(--ink-soft); margin-top:0.15rem;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed; inset:0; background:rgba(30,33,29,0.45); display:none; align-items:center; justify-content:center; z-index:100; padding:1.5rem;}
+  .modal-overlay.is-open{display:flex;}
+  .modal{background:#fff; border-radius:8px; padding:1.8rem; width:100%; max-width:400px;}
+  .modal h3{margin:0 0 0.5rem; font-size:1.1rem;}
+  .modal p{font-size:0.9rem; color:var(--ink-soft); margin:0 0 1.4rem;}
+  .modal .field{margin-bottom:1rem;}
+  .modal .field input{display:block; width:100%;}
+  .modal-actions{display:flex; gap:0.8rem; justify-content:flex-end; margin-top:0.6rem;}
+
+  /* ---------- Segmented ---------- */
+  .segmented{display:flex; gap:0.4rem;}
+  .segmented button{font-size:0.85rem; padding:0.5rem 1rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft);}
+  .segmented button.is-active{border-color:var(--ink); color:var(--ink); font-weight:600;}
+
+  .support-row{display:flex; gap:0.8rem; flex-wrap:wrap; margin-top:1rem;}
+
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .field-grid, .system-grid{grid-template-columns:1fr;}
+    .hero-flex{flex-direction:column;}
+    .hero-actions{align-items:flex-start;}
+  }
+  @media (max-width:600px){
+    .content{padding:1.2rem;}
+    .robot3d-card{flex-direction:column; text-align:center;}
+    .robot3d-copy p{max-width:none;}
+  }
+
+  /* ---------- Language toggle ---------- */
+  .lang-toggle{background:transparent; border:1px solid var(--rule-light); color:var(--ink-soft); border-radius:999px; padding:0.45rem 1rem; font-size:0.82rem; font-weight:600;}
+  .lang-toggle:hover{color:var(--ink); border-color:var(--ink);}
+
+  /* ---------- RTL / Arabic ---------- */
+  html[dir="rtl"] body{direction:rtl;}
+  html[dir="rtl"] body.lang-ar, html[dir="rtl"] body.lang-ar .display{font-family:'Tajawal', 'Public Sans', system-ui, sans-serif;}
+  html[dir="rtl"] .sidebar{border-right:none; border-left:1px solid var(--rule-light);}
+  html[dir="rtl"] .sidebar__nav a.is-active{border-left-color:transparent; border-right-color:var(--teal); border-right-width:2px; border-right-style:solid;}
+  html[dir="rtl"] .icon-dot{right:auto; left:0;}
+  html[dir="rtl"] .hero-actions{align-items:flex-start;}
+  html[dir="rtl"] .hero-meta span:not(:last-child)::after{margin-left:0; margin-right:0.5rem;}
+  html[dir="rtl"] .elder-card__meta span:not(:last-child)::after{margin-left:0; margin-right:0.5rem;}
+  html[dir="rtl"] .switch__thumb{left:auto; right:3px;}
+  html[dir="rtl"] .switch input:checked + .switch__track .switch__thumb{transform:translateX(-18px);}
+  html[dir="rtl"] .modal-actions{justify-content:flex-start;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="sidebar__logo display">ElderGuardian+</div>
+    <ul class="sidebar__nav">
+      <li><a href="elderguardian-messages.html" data-i18n="nav.messages">Messages</a></li>
+      <li><a href="elderguardian-help.html" data-i18n="nav.help">Help &amp; Support</a></li>
+      <li><a href="elderguardian-settings.html" data-i18n="nav.settings">Settings</a></li>
+      <li><a href="elderguardian-profile.html" class="is-active" data-i18n="nav.profile">Profile</a></li>
+    </ul>
+    <div class="sidebar__user">
+      <div class="avatar">SG</div>
+      <span class="sidebar__user-name">Shaza Gouda</span>
+    </div>
+    <button class="sidebar__signout" id="sidebarSignOut" data-i18n="common.signOut">Sign Out</button>
+  </aside>
+
+  <div class="main">
+    <!-- ================= TOP BAR ================= -->
+    <div class="topbar">
+      <div class="topbar__title" data-i18n="nav.profile">Profile</div>
+      <div class="topbar__right">
+        <button class="elder-select"><span data-i18n-keep="1">Ahmed Hassan</span> ▾</button>
+        <button class="icon-btn" aria-label="Notifications">🔔<span class="icon-dot"></span></button>
+        <a class="icon-btn" href="elderguardian-messages.html" aria-label="Messages" style="text-decoration:none; display:inline-flex; align-items:center;">✉</a>
+        <span class="conn-status"><span class="conn-dot"></span><span data-i18n="status.connected">Connected</span></span>
+        <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language">العربية</button>
+        <div class="avatar">SG</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- ================= PROFILE HERO ================= -->
+      <section class="block">
+        <div class="hero-flex">
+          <div class="hero-flex__left">
+            <div class="hero-avatar">SG</div>
+            <div>
+              <p class="hero-eyebrow" data-i18n="hero.eyebrow">Your Profile</p>
+              <h1 class="hero-name display">Shaza Gouda</h1>
+              <p class="hero-role" data-i18n="role.familyMember">Family Member</p>
+              <p class="hero-tagline" data-i18n="hero.tagline">"Managing care with ElderGuardian+"</p>
+              <div class="hero-meta">
+                <span>shaza@example.com</span>
+                <span data-i18n="hero.accountActive">Account active</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="heroEditBtn" data-i18n="hero.editProfile">Edit Profile</button>
+            <button class="btn-text" id="heroViewSystem" data-i18n="hero.viewSystem">View Care System</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PROFILE VISUAL ================= -->
+      <section class="block">
+        <div class="robot3d-card">
+          <div class="robot3d-canvas" id="robotCanvas1">
+            <svg class="robot-hero-svg" viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ companion robot: a low, rounded, silver device with a spherical head, a dark visor and a soft teal light band, the same design used throughout the site.">
+              <defs>
+                <radialGradient id="robotHeadGrad" cx="35%" cy="28%" r="80%">
+                  <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F0EEE7"/><stop offset="100%" stop-color="#C7C4B9"/>
+                </radialGradient>
+                <linearGradient id="robotDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1">
+                  <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#E9E7DE"/><stop offset="100%" stop-color="#C2BFB3"/>
+                </linearGradient>
+                <linearGradient id="robotBaseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#E7E5DC"/><stop offset="100%" stop-color="#B3B0A4"/>
+                </linearGradient>
+                <linearGradient id="robotFootGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#9C9884"/><stop offset="100%" stop-color="#6C6952"/>
+                </linearGradient>
+                <linearGradient id="robotVisorGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2E312B"/><stop offset="100%" stop-color="#101210"/>
+                </linearGradient>
+                <linearGradient id="robotLightGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#3D6961"/><stop offset="50%" stop-color="#6FAA9F"/><stop offset="100%" stop-color="#3D6961"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+              <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+              <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+              <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+              <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+              <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+              <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+              <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+              <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+              <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+              <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+              <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)"/>
+              <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+            </svg>
+          </div>
+          <div class="robot3d-copy">
+            <h3 class="display" data-i18n="robot.title">Ahmed's ElderGuardian+ companion</h3>
+            <p data-i18n="robot.desc">The same robot, resting quietly beside the chair in Ahmed's living room — connected, online, and ready when needed.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PERSONAL INFORMATION ================= -->
+      <section class="block personal-info" id="personalInfoSection">
+        <h2 data-i18n="personal.title">Personal information</h2>
+        <div class="field-grid">
+          <div class="field" id="field-name">
+            <label data-i18n="field.fullName">Full Name</label>
+            <span class="view-value">Shaza Gouda</span>
+            <input type="text" value="Shaza Gouda">
+            <span class="field-error" data-i18n="personal.nameError">Please enter your full name.</span>
+          </div>
+          <div class="field" id="field-email">
+            <label data-i18n="field.emailAddress">Email Address</label>
+            <span class="view-value">shaza@example.com</span>
+            <input type="email" value="shaza@example.com">
+            <span class="field-error" data-i18n="personal.emailError">Please enter a valid email address.</span>
+          </div>
+          <div class="field" id="field-phone">
+            <label data-i18n="field.phone">Phone Number</label>
+            <span class="view-value">+20 XXX XXX XXXX</span>
+            <input type="tel" value="+20 XXX XXX XXXX">
+          </div>
+          <div class="field" id="field-country">
+            <label data-i18n="field.country">Country</label>
+            <span class="view-value" data-i18n="country.egypt">Egypt</span>
+            <select>
+              <option data-i18n="country.egypt">Egypt</option><option data-i18n="country.saudi">Saudi Arabia</option><option data-i18n="country.uae">United Arab Emirates</option><option data-i18n="common.other">Other</option>
+            </select>
+          </div>
+          <div class="field" id="field-language">
+            <label data-i18n="field.prefLang">Preferred Language</label>
+            <span class="view-value" data-i18n="lang.english">English</span>
+            <select>
+              <option data-i18n="lang.english">English</option><option data-i18n="lang.arabic">Arabic</option>
+            </select>
+          </div>
+          <div class="field" id="field-role">
+            <label data-i18n="field.accountRole">Account Role</label>
+            <span class="view-value" data-i18n="role.familyMember">Family Member</span>
+            <select>
+              <option data-i18n="role.familyMember">Family Member</option><option data-i18n="role.caregiver">Caregiver</option><option data-i18n="role.doctor">Doctor</option><option data-i18n="common.other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions" id="viewActions">
+          <button class="btn btn-outline" id="editPersonalBtn" data-i18n="common.edit">Edit</button>
+        </div>
+        <div class="form-actions" id="editActions" style="display:none;">
+          <button class="btn btn-primary" id="savePersonalBtn" data-i18n="common.saveChanges">Save Changes</button>
+          <button class="btn btn-outline" id="cancelPersonalBtn" data-i18n="common.cancel">Cancel</button>
+          <span class="save-success" id="saveSuccess">✓ <span data-i18n="common.saved">Saved</span></span>
+        </div>
+      </section>
+
+      <!-- ================= CARE RELATIONSHIP ================= -->
+      <section class="block">
+        <h2 data-i18n="care.title">Care relationship</h2>
+        <div class="relationship-flow"><span data-i18n="care.you">You</span> <span>→</span> <b>ElderGuardian+</b> <span>→</span> <span data-i18n="care.ahmedsHome">Ahmed's Home</span></div>
+        <div class="relationship-row">
+          <div class="elder-card">
+            <div class="avatar">AH</div>
+            <div>
+              <div style="font-weight:600;">Ahmed Hassan</div>
+              <div class="elder-card__meta"><span data-i18n="care.age72">Age 72</span><span data-i18n="care.relFather">Relationship: Father</span><span data-i18n="care.systemActive">Care system: Active</span><span data-i18n="status.connected">Connected</span></div>
+            </div>
+          </div>
+          <div class="relationship-actions">
+            <button class="btn btn-outline" data-i18n="care.viewElderProfile">View Elder Profile</button>
+            <button class="btn btn-outline" data-i18n="care.manageAccess">Manage Care Access</button>
+            <button class="btn btn-outline" data-i18n="care.addLovedOne">Add Loved One</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CONNECTED SYSTEM ================= -->
+      <section class="block" id="connectedSystemSection">
+        <h2 data-i18n="system.title">Your ElderGuardian+ system</h2>
+        <div class="system-grid">
+          <div class="robot3d-canvas" id="robotCanvas2" style="width:100%; height:240px; border-radius:8px; background:radial-gradient(ellipse at 60% 40%, #F3F1EA 0%, #E4E0D3 100%);">
+            <svg class="robot-hero-svg" viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ companion robot, the same design used throughout the site.">
+              <defs>
+                <radialGradient id="robotHeadGrad2" cx="35%" cy="28%" r="80%">
+                  <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F0EEE7"/><stop offset="100%" stop-color="#C7C4B9"/>
+                </radialGradient>
+                <linearGradient id="robotDomeGrad2" x1="0.15" y1="0" x2="0.85" y2="1">
+                  <stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#E9E7DE"/><stop offset="100%" stop-color="#C2BFB3"/>
+                </linearGradient>
+                <linearGradient id="robotBaseGrad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#E7E5DC"/><stop offset="100%" stop-color="#B3B0A4"/>
+                </linearGradient>
+                <linearGradient id="robotFootGrad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#9C9884"/><stop offset="100%" stop-color="#6C6952"/>
+                </linearGradient>
+                <linearGradient id="robotVisorGrad2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2E312B"/><stop offset="100%" stop-color="#101210"/>
+                </linearGradient>
+                <linearGradient id="robotLightGrad2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#3D6961"/><stop offset="50%" stop-color="#6FAA9F"/><stop offset="100%" stop-color="#3D6961"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+              <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad2)"/>
+              <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad2)"/>
+              <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad2)"/>
+              <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad2)"/>
+              <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+              <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+              <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad2)"/>
+              <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+              <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+              <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad2)"/>
+              <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad2)"/>
+              <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+            </svg>
+          </div>
+          <div>
+            <div class="system-info-row"><span data-i18n="system.robot">Robot</span><span data-i18n="system.robotName">ElderGuardian+ Robot</span></div>
+            <div class="system-info-row"><span data-i18n="system.status">Status</span><span data-i18n="status.connected">Connected</span></div>
+            <div class="system-info-row"><span data-i18n="system.location">Location</span><span data-i18n="care.ahmedsHome">Ahmed's Home</span></div>
+            <div class="system-info-row"><span data-i18n="system.connection">Connection</span><span data-i18n="status.online">Online</span></div>
+            <div class="system-info-row"><span data-i18n="system.battery">Battery</span><span>82%</span></div>
+            <div class="system-actions">
+              <button class="btn btn-outline" data-i18n="system.viewRobot">View Robot</button>
+              <button class="btn btn-outline" data-i18n="system.sendReminder">Send Reminder</button>
+              <button class="btn btn-outline" data-i18n="system.sendMessage">Send Message</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= NOTIFICATIONS ================= -->
+      <section class="block">
+        <h2 data-i18n="notif.title">Notifications</h2>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.important">Important alerts</span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.medication">Medication reminders</span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.activity">Activity changes</span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.emergency">Emergency notifications</span><label class="switch"><input type="checkbox" checked disabled><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.robot">Robot notifications</span><label class="switch"><input type="checkbox"><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.doctorUpdates">Doctor monitoring updates</span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="notif.familyMessages">Family messages</span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+      </section>
+
+      <!-- ================= PRIVACY & DATA ================= -->
+      <section class="block">
+        <h2 data-i18n="privacy.title2">Privacy &amp; data</h2>
+        <p style="font-size:1.02rem; margin:0 0 0.5rem; font-weight:600;" data-i18n="privacy.headline">Your care data should work for you — not watch you.</p>
+        <p style="font-size:0.9rem; color:var(--ink-soft); max-width:56ch; line-height:1.6; margin:0;" data-i18n="privacy.body">ElderGuardian+ is designed around privacy-first monitoring, using meaningful environmental signals instead of constant visual surveillance.</p>
+        <div class="privacy-tags"><span data-i18n="privacy.tagNoCam">No cameras</span><span data-i18n="privacy.tagNoVideo">No continuous video monitoring</span></div>
+        <div class="toggle-row"><span class="toggle-row__label"><span data-i18n="privacy.familyAccess">Family access</span><div class="toggle-row__sub" data-i18n="privacy.familyAccessSub">Other family members can view Ahmed's status</div></span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label"><span data-i18n="privacy.doctorAccess">Doctor monitoring access</span><div class="toggle-row__sub" data-i18n="privacy.doctorAccessSub">Dr. Layla Mansour can review activity insights</div></span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label"><span data-i18n="privacy.activityPerms">Activity data permissions</span><div class="toggle-row__sub" data-i18n="privacy.activityPermsSub">Allow pattern analysis for wellness trends</div></span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label"><span data-i18n="privacy.dataSharing">Data sharing preferences</span><div class="toggle-row__sub" data-i18n="privacy.dataSharingSub">Share anonymized insights to improve ElderGuardian+</div></span><label class="switch"><input type="checkbox"><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label"><span data-i18n="privacy.commPrefs">Communication preferences</span><div class="toggle-row__sub" data-i18n="privacy.commPrefsSub">Receive updates about your care system</div></span><label class="switch"><input type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+      </section>
+
+      <!-- ================= SECURITY ================= -->
+      <section class="block">
+        <h2 data-i18n="security.title">Security</h2>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.password">Password</div><div class="security-row__sub" data-i18n="security.passwordSub">Last changed 3 months ago</div></div>
+          <button class="btn btn-outline" id="changePasswordBtn" data-i18n="security.changePassword">Change Password</button>
+        </div>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.twoFactor">Two-Factor Authentication</div><div class="security-row__sub" data-i18n="security.twoFactorSub">Add an extra layer of security</div></div>
+          <label class="switch"><input type="checkbox" id="twoFactorToggle"><span class="switch__track"><span class="switch__thumb"></span></span></label>
+        </div>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.activeSessions">Active Sessions</div><div class="security-row__sub" data-i18n="security.activeSessionsSub">2 devices currently signed in</div></div>
+          <button class="btn-text" id="viewSessionsBtn" data-i18n="common.view">View</button>
+        </div>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.loginActivity">Login Activity</div><div class="security-row__sub" data-i18n="security.loginActivitySub">Last login: today, 09:12</div></div>
+          <button class="btn-text" data-i18n="common.view">View</button>
+        </div>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.connectedDevices">Connected Devices</div><div class="security-row__sub">iPhone, MacBook Pro</div></div>
+          <button class="btn-text" data-i18n="common.manage">Manage</button>
+        </div>
+        <div class="security-row">
+          <div><div class="security-row__label" data-i18n="security.signOutAll">Sign out of all devices</div></div>
+          <button class="btn btn-outline" id="signOutAllBtn" data-i18n="security.signOutAllBtn">Sign Out All</button>
+        </div>
+      </section>
+
+      <!-- ================= ACCOUNT PREFERENCES ================= -->
+      <section class="block">
+        <h2 data-i18n="prefs.title">Account preferences</h2>
+        <div class="field-grid" style="margin-bottom:1.4rem;">
+          <div class="field">
+            <label data-i18n="prefs.language">Language</label>
+            <select style="display:block;"><option data-i18n="lang.english">English</option><option data-i18n="lang.arabic">Arabic</option></select>
+          </div>
+          <div class="field">
+            <label data-i18n="prefs.timeZone">Time Zone</label>
+            <select style="display:block;"><option data-i18n="tz.cairo">Cairo (GMT+2)</option><option data-i18n="tz.riyadh">Riyadh (GMT+3)</option><option data-i18n="tz.dubai">Dubai (GMT+4)</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:1.4rem;">
+          <label data-i18n="prefs.appearance">Appearance</label>
+          <div class="segmented" id="appearanceSeg">
+            <button class="is-active" data-mode="light" data-i18n="prefs.light">Light</button>
+            <button data-mode="dark" data-i18n="prefs.dark">Dark</button>
+            <button data-mode="system" data-i18n="prefs.system">System</button>
+          </div>
+        </div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="prefs.largerText">Larger text &amp; high contrast</span><label class="switch"><input type="checkbox"><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+        <div class="toggle-row"><span class="toggle-row__label" data-i18n="prefs.reduceMotion">Reduce motion</span><label class="switch"><input type="checkbox"><span class="switch__track"><span class="switch__thumb"></span></span></label></div>
+      </section>
+
+      <!-- ================= SUPPORT ================= -->
+      <section class="block">
+        <h2 data-i18n="support.title">Need help?</h2>
+        <p style="font-size:0.92rem; color:var(--ink-soft); margin:0;" data-i18n="support.body">We're here to help you get the most from your ElderGuardian+ system.</p>
+        <div class="support-row">
+          <button class="btn btn-outline" data-i18n="support.helpCenter">Help Center</button>
+          <button class="btn btn-outline" data-i18n="support.contactSupport">Contact Support</button>
+          <button class="btn btn-outline" data-i18n="support.systemSupport">System Support</button>
+        </div>
+      </section>
+
+      <!-- ================= SIGN OUT ================= -->
+      <section class="block">
+        <button class="btn-text" id="mainSignOutBtn" style="color:var(--ink-soft);" data-i18n="common.signOut">Sign Out</button>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal">
+    <h3 class="display" data-i18n="security.changePassword">Change Password</h3>
+    <p data-i18n="modal.choosePassword">Choose a new password for your ElderGuardian+ account.</p>
+    <div class="field"><label data-i18n="modal.currentPassword">Current Password</label><input type="password"></div>
+    <div class="field"><label data-i18n="modal.newPassword">New Password</label><input type="password"></div>
+    <div class="field"><label data-i18n="modal.confirmNewPassword">Confirm New Password</label><input type="password"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-close="passwordModal" data-i18n="common.cancel">Cancel</button>
+      <button class="btn btn-primary" id="updatePasswordBtn" data-i18n="modal.updatePassword">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="signOutModal">
+  <div class="modal">
+    <h3 class="display" data-i18n="modal.signOutTitle">Sign out of ElderGuardian+?</h3>
+    <p data-i18n="modal.signOutBody">You can sign back in anytime.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-close="signOutModal" data-i18n="common.cancel">Cancel</button>
+      <button class="btn btn-primary" id="confirmSignOutBtn" data-i18n="common.signOut">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sessionsModal">
+  <div class="modal">
+    <h3 class="display" data-i18n="modal.activeSessions">Active Sessions</h3>
+    <p data-i18n="modal.devicesSignedIn">Devices currently signed in to your account.</p>
+    <div class="security-row"><div><div class="security-row__label">iPhone 14 — Cairo</div><div class="security-row__sub" data-i18n="modal.activeNow">Active now</div></div></div>
+    <div class="security-row"><div><div class="security-row__label">MacBook Pro — Cairo</div><div class="security-row__sub" data-i18n="modal.active2h">Active 2 hours ago</div></div></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" data-close="sessionsModal" data-i18n="common.close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================= i18n (English / Arabic) =================
+  const I18N = {
+    en: {
+      "nav.messages": "Messages",
+      "nav.help": "Help &amp; Support",
+      "nav.settings": "Settings",
+      "nav.profile": "Profile",
+      "common.signOut": "Sign Out",
+      "status.connected": "Connected",
+      "status.online": "Online",
+      "hero.eyebrow": "Your Profile",
+      "role.familyMember": "Family Member",
+      "hero.tagline": "\u201cManaging care with ElderGuardian+\u201d",
+      "hero.accountActive": "Account active",
+      "hero.editProfile": "Edit Profile",
+      "hero.viewSystem": "View Care System",
+      "robot.title": "Ahmed's ElderGuardian+ companion",
+      "robot.desc": "The same robot, resting quietly beside the chair in Ahmed's living room — connected, online, and ready when needed.",
+      "personal.title": "Personal information",
+      "field.fullName": "Full Name",
+      "personal.nameError": "Please enter your full name.",
+      "field.emailAddress": "Email Address",
+      "personal.emailError": "Please enter a valid email address.",
+      "field.phone": "Phone Number",
+      "field.country": "Country",
+      "country.egypt": "Egypt",
+      "country.saudi": "Saudi Arabia",
+      "country.uae": "United Arab Emirates",
+      "common.other": "Other",
+      "field.prefLang": "Preferred Language",
+      "lang.english": "English",
+      "lang.arabic": "Arabic",
+      "field.accountRole": "Account Role",
+      "role.caregiver": "Caregiver",
+      "role.doctor": "Doctor",
+      "common.edit": "Edit",
+      "common.saveChanges": "Save Changes",
+      "common.saving": "Saving…",
+      "common.cancel": "Cancel",
+      "common.saved": "Saved",
+      "care.title": "Care relationship",
+      "care.you": "You",
+      "care.ahmedsHome": "Ahmed's Home",
+      "care.age72": "Age 72",
+      "care.relFather": "Relationship: Father",
+      "care.systemActive": "Care system: Active",
+      "care.viewElderProfile": "View Elder Profile",
+      "care.manageAccess": "Manage Care Access",
+      "care.addLovedOne": "Add Loved One",
+      "system.title": "Your ElderGuardian+ system",
+      "system.robot": "Robot",
+      "system.robotName": "ElderGuardian+ Robot",
+      "system.status": "Status",
+      "system.location": "Location",
+      "system.connection": "Connection",
+      "system.battery": "Battery",
+      "system.viewRobot": "View Robot",
+      "system.sendReminder": "Send Reminder",
+      "system.sendMessage": "Send Message",
+      "notif.title": "Notifications",
+      "notif.important": "Important alerts",
+      "notif.medication": "Medication reminders",
+      "notif.activity": "Activity changes",
+      "notif.emergency": "Emergency notifications",
+      "notif.robot": "Robot notifications",
+      "notif.doctorUpdates": "Doctor monitoring updates",
+      "notif.familyMessages": "Family messages",
+      "privacy.title2": "Privacy &amp; data",
+      "privacy.headline": "Your care data should work for you — not watch you.",
+      "privacy.body": "ElderGuardian+ is designed around privacy-first monitoring, using meaningful environmental signals instead of constant visual surveillance.",
+      "privacy.tagNoCam": "No cameras",
+      "privacy.tagNoVideo": "No continuous video monitoring",
+      "privacy.familyAccess": "Family access",
+      "privacy.familyAccessSub": "Other family members can view Ahmed's status",
+      "privacy.doctorAccess": "Doctor monitoring access",
+      "privacy.doctorAccessSub": "Dr. Layla Mansour can review activity insights",
+      "privacy.activityPerms": "Activity data permissions",
+      "privacy.activityPermsSub": "Allow pattern analysis for wellness trends",
+      "privacy.dataSharing": "Data sharing preferences",
+      "privacy.dataSharingSub": "Share anonymized insights to improve ElderGuardian+",
+      "privacy.commPrefs": "Communication preferences",
+      "privacy.commPrefsSub": "Receive updates about your care system",
+      "security.title": "Security",
+      "security.password": "Password",
+      "security.passwordSub": "Last changed 3 months ago",
+      "security.changePassword": "Change Password",
+      "security.twoFactor": "Two-Factor Authentication",
+      "security.twoFactorSub": "Add an extra layer of security",
+      "security.activeSessions": "Active Sessions",
+      "security.activeSessionsSub": "2 devices currently signed in",
+      "common.view": "View",
+      "security.loginActivity": "Login Activity",
+      "security.loginActivitySub": "Last login: today, 09:12",
+      "security.connectedDevices": "Connected Devices",
+      "common.manage": "Manage",
+      "security.signOutAll": "Sign out of all devices",
+      "security.signOutAllBtn": "Sign Out All",
+      "security.signedOutAll": "Signed out of all devices",
+      "prefs.title": "Account preferences",
+      "prefs.language": "Language",
+      "prefs.timeZone": "Time Zone",
+      "tz.cairo": "Cairo (GMT+2)",
+      "tz.riyadh": "Riyadh (GMT+3)",
+      "tz.dubai": "Dubai (GMT+4)",
+      "prefs.appearance": "Appearance",
+      "prefs.light": "Light",
+      "prefs.dark": "Dark",
+      "prefs.system": "System",
+      "prefs.largerText": "Larger text &amp; high contrast",
+      "prefs.reduceMotion": "Reduce motion",
+      "support.title": "Need help?",
+      "support.body": "We're here to help you get the most from your ElderGuardian+ system.",
+      "support.helpCenter": "Help Center",
+      "support.contactSupport": "Contact Support",
+      "support.systemSupport": "System Support",
+      "modal.choosePassword": "Choose a new password for your ElderGuardian+ account.",
+      "modal.currentPassword": "Current Password",
+      "modal.newPassword": "New Password",
+      "modal.confirmNewPassword": "Confirm New Password",
+      "modal.updatePassword": "Update Password",
+      "modal.updating": "Updating…",
+      "modal.signOutTitle": "Sign out of ElderGuardian+?",
+      "modal.signOutBody": "You can sign back in anytime.",
+      "modal.signingOut": "Signing out…",
+      "modal.activeSessions": "Active Sessions",
+      "modal.devicesSignedIn": "Devices currently signed in to your account.",
+      "modal.activeNow": "Active now",
+      "modal.active2h": "Active 2 hours ago",
+      "common.close": "Close",
+      "lang.toggleLabel": "العربية"
+    },
+    ar: {
+      "nav.messages": "الرسائل",
+      "nav.help": "المساعدة والدعم",
+      "nav.settings": "الإعدادات",
+      "nav.profile": "الملف الشخصي",
+      "common.signOut": "تسجيل الخروج",
+      "status.connected": "متصل",
+      "status.online": "متصل بالإنترنت",
+      "hero.eyebrow": "ملفك الشخصي",
+      "role.familyMember": "فرد من العائلة",
+      "hero.tagline": "\u201cإدارة الرعاية مع ElderGuardian+\u201d",
+      "hero.accountActive": "الحساب نشط",
+      "hero.editProfile": "تعديل الملف الشخصي",
+      "hero.viewSystem": "عرض نظام الرعاية",
+      "robot.title": "رفيق أحمد من ElderGuardian+",
+      "robot.desc": "نفس الروبوت، يستريح بهدوء بجانب الكرسي في غرفة معيشة أحمد — متصل، ومتاح، وجاهز عند الحاجة.",
+      "personal.title": "المعلومات الشخصية",
+      "field.fullName": "الاسم الكامل",
+      "personal.nameError": "الرجاء إدخال اسمك الكامل.",
+      "field.emailAddress": "البريد الإلكتروني",
+      "personal.emailError": "الرجاء إدخال بريد إلكتروني صالح.",
+      "field.phone": "رقم الهاتف",
+      "field.country": "الدولة",
+      "country.egypt": "مصر",
+      "country.saudi": "المملكة العربية السعودية",
+      "country.uae": "الإمارات العربية المتحدة",
+      "common.other": "أخرى",
+      "field.prefLang": "اللغة المفضلة",
+      "lang.english": "الإنجليزية",
+      "lang.arabic": "العربية",
+      "field.accountRole": "دور الحساب",
+      "role.caregiver": "مقدّم رعاية",
+      "role.doctor": "طبيب",
+      "common.edit": "تعديل",
+      "common.saveChanges": "حفظ التغييرات",
+      "common.saving": "جارٍ الحفظ…",
+      "common.cancel": "إلغاء",
+      "common.saved": "تم الحفظ",
+      "care.title": "علاقة الرعاية",
+      "care.you": "أنت",
+      "care.ahmedsHome": "منزل أحمد",
+      "care.age72": "العمر 72",
+      "care.relFather": "صلة القرابة: الأب",
+      "care.systemActive": "نظام الرعاية: نشط",
+      "care.viewElderProfile": "عرض ملف المسنّ",
+      "care.manageAccess": "إدارة صلاحيات الرعاية",
+      "care.addLovedOne": "إضافة شخص عزيز",
+      "system.title": "نظام ElderGuardian+ الخاص بك",
+      "system.robot": "الروبوت",
+      "system.robotName": "روبوت ElderGuardian+",
+      "system.status": "الحالة",
+      "system.location": "الموقع",
+      "system.connection": "الاتصال",
+      "system.battery": "البطارية",
+      "system.viewRobot": "عرض الروبوت",
+      "system.sendReminder": "إرسال تذكير",
+      "system.sendMessage": "إرسال رسالة",
+      "notif.title": "الإشعارات",
+      "notif.important": "التنبيهات المهمة",
+      "notif.medication": "تذكيرات الأدوية",
+      "notif.activity": "تغيرات النشاط",
+      "notif.emergency": "إشعارات الطوارئ",
+      "notif.robot": "إشعارات الروبوت",
+      "notif.doctorUpdates": "تحديثات مراقبة الطبيب",
+      "notif.familyMessages": "رسائل العائلة",
+      "privacy.title2": "الخصوصية والبيانات",
+      "privacy.headline": "بيانات رعايتك يجب أن تعمل لصالحك — لا أن تراقبك.",
+      "privacy.body": "صُمم ElderGuardian+ حول مبدأ المراقبة القائمة على الخصوصية أولاً، باستخدام إشارات بيئية ذات معنى بدلاً من المراقبة البصرية المستمرة.",
+      "privacy.tagNoCam": "بدون كاميرات",
+      "privacy.tagNoVideo": "بدون مراقبة فيديو مستمرة",
+      "privacy.familyAccess": "وصول العائلة",
+      "privacy.familyAccessSub": "يمكن لأفراد العائلة الآخرين رؤية حالة أحمد",
+      "privacy.doctorAccess": "وصول الطبيب للمراقبة",
+      "privacy.doctorAccessSub": "يمكن للدكتورة ليلى منصور مراجعة رؤى النشاط",
+      "privacy.activityPerms": "أذونات بيانات النشاط",
+      "privacy.activityPermsSub": "السماح بتحليل الأنماط لمعرفة اتجاهات العافية",
+      "privacy.dataSharing": "تفضيلات مشاركة البيانات",
+      "privacy.dataSharingSub": "مشاركة رؤى مجهولة الهوية لتحسين ElderGuardian+",
+      "privacy.commPrefs": "تفضيلات التواصل",
+      "privacy.commPrefsSub": "تلقّي تحديثات حول نظام رعايتك",
+      "security.title": "الأمان",
+      "security.password": "كلمة المرور",
+      "security.passwordSub": "آخر تغيير قبل 3 أشهر",
+      "security.changePassword": "تغيير كلمة المرور",
+      "security.twoFactor": "المصادقة الثنائية",
+      "security.twoFactorSub": "أضف طبقة إضافية من الأمان",
+      "security.activeSessions": "الجلسات النشطة",
+      "security.activeSessionsSub": "جهازان مسجّلا الدخول حاليًا",
+      "common.view": "عرض",
+      "security.loginActivity": "نشاط تسجيل الدخول",
+      "security.loginActivitySub": "آخر تسجيل دخول: اليوم، 09:12",
+      "security.connectedDevices": "الأجهزة المتصلة",
+      "common.manage": "إدارة",
+      "security.signOutAll": "تسجيل الخروج من جميع الأجهزة",
+      "security.signOutAllBtn": "تسجيل الخروج من الكل",
+      "security.signedOutAll": "تم تسجيل الخروج من جميع الأجهزة",
+      "prefs.title": "تفضيلات الحساب",
+      "prefs.language": "اللغة",
+      "prefs.timeZone": "المنطقة الزمنية",
+      "tz.cairo": "القاهرة (GMT+2)",
+      "tz.riyadh": "الرياض (GMT+3)",
+      "tz.dubai": "دبي (GMT+4)",
+      "prefs.appearance": "المظهر",
+      "prefs.light": "فاتح",
+      "prefs.dark": "داكن",
+      "prefs.system": "النظام",
+      "prefs.largerText": "نص أكبر وتباين عالٍ",
+      "prefs.reduceMotion": "تقليل الحركة",
+      "support.title": "بحاجة إلى مساعدة؟",
+      "support.body": "نحن هنا لمساعدتك على الاستفادة القصوى من نظام ElderGuardian+ الخاص بك.",
+      "support.helpCenter": "مركز المساعدة",
+      "support.contactSupport": "التواصل مع الدعم",
+      "support.systemSupport": "دعم النظام",
+      "modal.choosePassword": "اختر كلمة مرور جديدة لحساب ElderGuardian+ الخاص بك.",
+      "modal.currentPassword": "كلمة المرور الحالية",
+      "modal.newPassword": "كلمة المرور الجديدة",
+      "modal.confirmNewPassword": "تأكيد كلمة المرور الجديدة",
+      "modal.updatePassword": "تحديث كلمة المرور",
+      "modal.updating": "جارٍ التحديث…",
+      "modal.signOutTitle": "هل تريد تسجيل الخروج من ElderGuardian+؟",
+      "modal.signOutBody": "يمكنك تسجيل الدخول مرة أخرى في أي وقت.",
+      "modal.signingOut": "جارٍ تسجيل الخروج…",
+      "modal.activeSessions": "الجلسات النشطة",
+      "modal.devicesSignedIn": "الأجهزة المسجّلة الدخول حاليًا إلى حسابك.",
+      "modal.activeNow": "نشط الآن",
+      "modal.active2h": "نشط منذ ساعتين",
+      "common.close": "إغلاق",
+      "lang.toggleLabel": "English"
+    }
+  };
+
+  let currentLang = localStorage.getItem('eg_lang') || 'en';
+  function t(key){
+    const dict = I18N[currentLang] || I18N.en;
+    return (key in dict) ? dict[key] : (I18N.en[key] || key);
+  }
+
+  function applyStaticTranslations(){
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('lang-ar', currentLang === 'ar');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.innerHTML = t(el.getAttribute('data-i18n'));
+    });
+    document.title = currentLang === 'ar' ? 'ElderGuardian+ — الملف الشخصي' : 'ElderGuardian+ — Profile';
+    const toggleBtn = document.getElementById('langToggle');
+    if (toggleBtn) toggleBtn.textContent = t('lang.toggleLabel');
+  }
+</script>
+
+<script>
+  // ================= Personal information: edit/save/cancel =================
+  const personalInfo = document.getElementById('personalInfoSection');
+  const viewActions = document.getElementById('viewActions');
+  const editActions = document.getElementById('editActions');
+  const saveSuccess = document.getElementById('saveSuccess');
+  const savePersonalBtn = document.getElementById('savePersonalBtn');
+
+  function enterEditMode(){
+    personalInfo.classList.add('is-editing');
+    viewActions.style.display = 'none';
+    editActions.style.display = 'flex';
+    saveSuccess.classList.remove('is-shown');
+  }
+  function exitEditMode(){
+    personalInfo.classList.remove('is-editing');
+    viewActions.style.display = 'flex';
+    editActions.style.display = 'none';
+  }
+  document.getElementById('editPersonalBtn').addEventListener('click', enterEditMode);
+  document.getElementById('heroEditBtn').addEventListener('click', () => {
+    enterEditMode();
+    personalInfo.scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+  document.getElementById('cancelPersonalBtn').addEventListener('click', () => {
+    document.querySelectorAll('.field input, .field select').forEach(el => {
+      const view = el.closest('.field').querySelector('.view-value');
+      if (el.tagName === 'SELECT') el.value = view.textContent;
+      else el.value = view.textContent;
+    });
+    document.querySelectorAll('.field').forEach(f => f.classList.remove('has-error'));
+    exitEditMode();
+  });
+  savePersonalBtn.addEventListener('click', () => {
+    let valid = true;
+    const nameField = document.getElementById('field-name');
+    const emailField = document.getElementById('field-email');
+    const nameVal = nameField.querySelector('input').value.trim();
+    const emailVal = emailField.querySelector('input').value.trim();
+    nameField.classList.toggle('has-error', nameVal.length < 2);
+    emailField.classList.toggle('has-error', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal));
+    if (nameVal.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) valid = false;
+    if (!valid) return;
+
+    savePersonalBtn.textContent = t('common.saving');
+    savePersonalBtn.disabled = true;
+    setTimeout(() => {
+      document.querySelectorAll('.field').forEach(f => {
+        const input = f.querySelector('input, select');
+        const view = f.querySelector('.view-value');
+        if (input) view.textContent = input.value;
+      });
+      document.querySelector('.hero-name').textContent = nameVal;
+      document.querySelectorAll('.sidebar__user-name').forEach(() => {});
+      savePersonalBtn.textContent = t('common.saveChanges');
+      savePersonalBtn.disabled = false;
+      saveSuccess.classList.add('is-shown');
+      setTimeout(() => { exitEditMode(); }, 900);
+    }, 900);
+  });
+
+  document.getElementById('heroViewSystem').addEventListener('click', () => {
+    document.getElementById('connectedSystemSection').scrollIntoView({ behavior:'smooth', block:'start' });
+  });
+
+  // ================= Appearance segmented control =================
+  document.querySelectorAll('#appearanceSeg button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#appearanceSeg button').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+  });
+
+  // ================= Modals =================
+  function openModal(id){ document.getElementById(id).classList.add('is-open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('is-open'); }
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+  });
+
+  document.getElementById('changePasswordBtn').addEventListener('click', () => openModal('passwordModal'));
+  document.getElementById('updatePasswordBtn').addEventListener('click', () => {
+    const btn = document.getElementById('updatePasswordBtn');
+    btn.textContent = t('modal.updating'); btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = t('modal.updatePassword'); btn.disabled = false;
+      closeModal('passwordModal');
+    }, 900);
+  });
+
+  document.getElementById('viewSessionsBtn').addEventListener('click', () => openModal('sessionsModal'));
+
+  document.getElementById('signOutAllBtn').addEventListener('click', () => {
+    const btn = document.getElementById('signOutAllBtn');
+    btn.textContent = t('security.signedOutAll');
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = t('security.signOutAllBtn'); btn.disabled = false; }, 1800);
+  });
+
+  document.getElementById('sidebarSignOut').addEventListener('click', () => openModal('signOutModal'));
+  document.getElementById('mainSignOutBtn').addEventListener('click', () => openModal('signOutModal'));
+  document.getElementById('confirmSignOutBtn').addEventListener('click', () => {
+    const btn = document.getElementById('confirmSignOutBtn');
+    btn.textContent = t('modal.signingOut'); btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = t('common.signOut'); btn.disabled = false;
+      closeModal('signOutModal');
+    }, 900);
+  });
+
+  // ================= Language toggle wiring =================
+  function setLanguage(lang){
+    currentLang = lang;
+    localStorage.setItem('eg_lang', lang);
+    applyStaticTranslations();
+    if (!savePersonalBtn.disabled) savePersonalBtn.textContent = t('common.saveChanges');
+  }
+
+  document.getElementById('langToggle').addEventListener('click', () => {
+    setLanguage(currentLang === 'ar' ? 'en' : 'ar');
+  });
+
+  applyStaticTranslations();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Doctor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-light:#F5F3EE; --panel:#EDEAE0; --ink:#1E211D; --ink-soft:#4B4E48;
+    --teal:#4F8079; --sand-dark:#B79E77; --rule-light:rgba(30,33,29,0.14);
+    --attn:#B7854F; --important:#9C5A3C; --emergency:#8B3A2E;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  button{font-family:inherit; cursor:pointer;}
+
+  .dashboard{display:grid; grid-template-columns:220px 1fr; min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{background:var(--panel); border-right:1px solid var(--rule-light); display:flex; flex-direction:column; padding:1.6rem 1.2rem;}
+  .sidebar__logo{font-family:'Libre Caslon Display',serif; font-size:1.05rem; margin:0 0 2rem; padding-left:0.4rem;}
+  .sidebar__nav{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.1rem; flex:1;}
+  .sidebar__nav a{display:block; padding:0.55rem 0.6rem; font-size:0.9rem; color:var(--ink-soft); text-decoration:none; border-left:2px solid transparent; border-radius:2px;}
+  .sidebar__nav a:hover{color:var(--ink);}
+  .sidebar__nav a.is-active{color:var(--ink); border-left-color:var(--teal); background:rgba(79,128,121,0.08); font-weight:600;}
+  .sidebar__bottom{list-style:none; margin:0; padding-top:1rem; border-top:1px solid var(--rule-light); display:flex; flex-direction:column; gap:0.1rem;}
+  .sidebar__bottom a{display:block; padding:0.5rem 0.6rem; font-size:0.85rem; color:var(--ink-soft); text-decoration:none;}
+  .sidebar__bottom a:hover{color:var(--ink);}
+
+  /* ---------- Top bar ---------- */
+  .topbar{position:sticky; top:0; z-index:20; background:var(--bg-light); border-bottom:1px solid var(--rule-light); padding:1.1rem 2rem; display:flex; align-items:center; justify-content:space-between; gap:1.5rem;}
+  .topbar__title{font-size:1.05rem; font-weight:600;}
+  .patient-select{position:relative;}
+  .patient-select__btn{background:none; border:1px solid var(--rule-light); border-radius:5px; padding:0.5rem 0.9rem; font-size:0.92rem; color:var(--ink); display:flex; align-items:center; gap:0.5rem;}
+  .topbar__right{display:flex; align-items:center; gap:1.4rem; font-size:0.88rem; color:var(--ink-soft);}
+  .conn-dot{width:8px; height:8px; border-radius:50%; background:var(--teal); display:inline-block; margin-right:0.4rem;}
+
+  .content{padding:1.8rem 2rem 4rem; display:flex; flex-direction:column; gap:1.8rem; max-width:1400px;}
+
+  /* ---------- Emergency banner ---------- */
+  .emergency-banner{display:none; background:#F3E4DF; border:1px solid var(--emergency); border-radius:8px; padding:1.3rem 1.6rem;}
+  .emergency-banner.is-shown{display:block;}
+  .emergency-banner h3{margin:0 0 0.3rem; color:var(--emergency); font-size:1.05rem;}
+  .emergency-banner p{margin:0 0 0.9rem; font-size:0.92rem; color:var(--ink);}
+  .emergency-banner__meta{font-size:0.85rem; color:var(--ink-soft); margin-bottom:1rem;}
+  .emergency-actions{display:flex; gap:0.8rem;}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:600; padding:0.65rem 1.2rem; border-radius:5px; border:1px solid transparent;}
+  .btn-primary{background:var(--teal); color:#0F1210;}
+  .btn-outline{background:transparent; color:var(--ink); border-color:var(--rule-light);}
+  .btn-emergency{background:var(--emergency); color:#F5F3EE;}
+
+  /* ---------- Card shell ---------- */
+  .card{background:#fff; border:1px solid var(--rule-light); border-radius:8px; padding:1.5rem;}
+  .card h3{font-size:0.95rem; margin:0 0 1rem; font-weight:600;}
+  .card--flush{padding:0; overflow:hidden;}
+
+  /* ---------- Hero grid ---------- */
+  .hero-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:1.5rem; align-items:stretch;}
+  .home3d-card{padding:1.2rem;}
+  .home3d__modes{display:flex; gap:0.5rem; margin-bottom:1rem;}
+  .mode-btn{font-size:0.83rem; padding:0.45rem 0.9rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft);}
+  .mode-btn.is-active{border-color:var(--ink); color:var(--ink); font-weight:600;}
+  .home3d__canvas{position:relative; height:360px; border-radius:6px; overflow:hidden; background:radial-gradient(ellipse at 50% 30%, #F3F1EA 0%, #E4E0D3 100%);}
+  .home3d__canvas canvas{display:block; width:100%; height:100%; cursor:grab;}
+  .home3d__canvas canvas:active{cursor:grabbing;}
+  .home3d__rooms{display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;}
+  .room-btn{font-size:0.82rem; padding:0.4rem 0.8rem; border-radius:5px; border:1px solid var(--rule-light); background:var(--bg-light); color:var(--ink-soft);}
+  .room-btn.is-selected{border-color:var(--teal); color:var(--ink);}
+
+  .patient-stack{display:flex; flex-direction:column; gap:1.5rem;}
+  .patient-header h2{font-size:1.4rem; margin:0 0 0.3rem;}
+  .patient-header__meta{font-size:0.88rem; color:var(--ink-soft); display:flex; gap:0.4rem; flex-wrap:wrap;}
+  .patient-header__meta span:not(:last-child)::after{content:"·"; margin-left:0.4rem; color:var(--rule-light);}
+
+  .status-card h3{font-size:1.15rem; margin:0 0 0.4rem; font-weight:600;}
+  .status-card p{font-size:0.9rem; color:var(--ink-soft); margin:0 0 1rem;}
+  .status-band{height:6px; border-radius:3px; background:var(--teal);}
+  .status-band.attn{background:var(--attn);}
+  .status-band.important{background:var(--important);}
+
+  /* ---------- AI insight ---------- */
+  .ai-card{border-style:dashed;}
+  .ai-card__label{font-size:0.82rem; color:var(--teal); font-weight:600; margin:0 0 0.6rem;}
+  .ai-card p{font-size:0.92rem; line-height:1.6; color:var(--ink); margin:0 0 0.5rem;}
+  .ai-card__confidence{font-size:0.85rem; color:var(--ink-soft); margin-bottom:0.9rem;}
+  .ai-card__footnote{font-size:0.78rem; color:var(--ink-soft); border-top:1px solid var(--rule-light); padding-top:0.8rem; margin:0;}
+
+  /* ---------- Activity + medication grid ---------- */
+  .mid-grid{display:grid; grid-template-columns:1.6fr 1fr; gap:1.5rem;}
+  .chart-toggle{display:flex; gap:0.5rem; margin-bottom:1rem;}
+  .chart-svg{width:100%; height:auto;}
+  .chart-legend{display:flex; gap:1.2rem; font-size:0.8rem; color:var(--ink-soft); margin-top:0.6rem;}
+  .chart-legend span{display:flex; align-items:center; gap:0.4rem;}
+  .legend-swatch{width:10px; height:10px; border-radius:2px;}
+
+  .med-row{display:grid; grid-template-columns:1fr auto; padding:0.6rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .med-row:last-of-type{border-bottom:none;}
+  .med-status{font-weight:600;}
+  .med-status.confirmed{color:var(--teal);}
+  .med-status.not-confirmed{color:var(--attn);}
+  .med-total{margin-top:1rem; padding-top:1rem; border-top:1px solid var(--rule-light); font-size:0.92rem;}
+  .med-total b{display:block; font-size:1.3rem;}
+  .sample-note{font-size:0.75rem; color:var(--ink-soft); font-style:italic; margin-top:0.8rem;}
+
+  /* ---------- Timeline ---------- */
+  .timeline{list-style:none; margin:0; padding:0;}
+  .timeline li{display:grid; grid-template-columns:70px 1fr; gap:1rem; padding:0.55rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .timeline li:last-child{border-bottom:none;}
+  .timeline time{color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+
+  /* ---------- Three-column row ---------- */
+  .tri-grid{display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:1.5rem;}
+  .alert-row{padding:0.8rem 0; border-bottom:1px solid var(--rule-light); cursor:pointer;}
+  .alert-row:last-child{border-bottom:none;}
+  .alert-row__top{display:flex; justify-content:space-between; align-items:center; font-size:0.88rem;}
+  .alert-tag{font-size:0.72rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:3px;}
+  .alert-tag.critical{background:rgba(139,58,46,0.12); color:var(--emergency);}
+  .alert-tag.important{background:rgba(156,90,60,0.12); color:var(--important);}
+  .alert-tag.info{background:rgba(79,128,121,0.1); color:var(--teal);}
+  .alert-detail{display:none; font-size:0.84rem; color:var(--ink-soft); margin-top:0.5rem; line-height:1.5;}
+  .alert-row.is-open .alert-detail{display:block;}
+  .alert-actions{display:flex; gap:0.5rem; margin-top:0.6rem;}
+  .alert-actions button{font-size:0.78rem; padding:0.35rem 0.7rem; border-radius:4px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft);}
+
+  .sensor-row{display:flex; justify-content:space-between; align-items:center; padding:0.65rem 0; border-bottom:1px solid var(--rule-light); font-size:0.88rem; cursor:pointer;}
+  .sensor-row:last-child{border-bottom:none;}
+  .sensor-row.is-selected{color:var(--teal); font-weight:600;}
+  .sensor-status{color:var(--ink-soft); font-size:0.82rem;}
+
+  .robot-status-row{display:flex; justify-content:space-between; font-size:0.88rem; padding:0.4rem 0;}
+  .robot-status-row span:first-child{color:var(--ink-soft);}
+  .robot-actions{display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;}
+  .robot-actions button{font-size:0.8rem; padding:0.45rem 0.8rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink);}
+
+  /* ---------- Trends / history ---------- */
+  .dual-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;}
+  .trend-row{display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .trend-row:last-child{border-bottom:none;}
+  .trend-value{color:var(--ink-soft); display:flex; align-items:center; gap:0.6rem;}
+  .spark{width:50px; height:16px;}
+
+  .history-filters{display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;}
+  .history-filters button{font-size:0.78rem; padding:0.35rem 0.7rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink-soft);}
+  .history-filters button.is-active{border-color:var(--ink); color:var(--ink);}
+  .history-item{display:grid; grid-template-columns:100px 1fr; gap:1rem; padding:0.55rem 0; border-bottom:1px solid var(--rule-light); font-size:0.88rem;}
+  .history-item:last-child{border-bottom:none;}
+  .history-item time{color:var(--ink-soft);}
+
+  /* ---------- Privacy + notes ---------- */
+  .privacy-line{display:flex; align-items:center; gap:0.6rem; font-size:0.85rem; color:var(--ink-soft); padding:0.8rem 0;}
+
+  /* ---------- View switching ---------- */
+  .view-container{display:block;}
+  .view-panel{display:none;}
+  .view-panel.is-active{display:flex; flex-direction:column; gap:1.8rem;}
+
+  /* ---------- Data table ---------- */
+  .data-table{width:100%; border-collapse:collapse; font-size:0.9rem;}
+  .data-table th{text-align:left; font-weight:600; color:var(--ink); padding:0.7rem 0.8rem 0.7rem 0; border-bottom:1px solid var(--ink);}
+  .data-table td{padding:0.8rem 0.8rem 0.8rem 0; border-bottom:1px solid var(--rule-light); color:var(--ink-soft);}
+  .data-table td:first-child{color:var(--ink); font-weight:500;}
+  .row-view-btn{font-size:0.8rem; padding:0.35rem 0.8rem; border-radius:5px; border:1px solid var(--rule-light); background:transparent; color:var(--ink);}
+  .status-text{font-weight:600;}
+  .status-text.normal{color:var(--teal);}
+  .status-text.attn{color:var(--attn);}
+  .status-text.important{color:var(--important);}
+
+  /* ---------- Messages ---------- */
+  .thread-item{padding:0.7rem 0.6rem; border-radius:5px; font-size:0.88rem; cursor:pointer; margin-bottom:0.2rem;}
+  .thread-item.is-active{background:rgba(79,128,121,0.1); font-weight:600;}
+  .thread-sub{display:block; font-size:0.78rem; color:var(--ink-soft); font-weight:400;}
+  .msg-bubble{max-width:70%; padding:0.6rem 0.9rem; border-radius:10px; font-size:0.88rem; line-height:1.5;}
+  .msg-bubble.them{background:var(--panel); align-self:flex-start;}
+  .msg-bubble.me{background:rgba(79,128,121,0.16); align-self:flex-end;}
+
+  /* ---------- Settings ---------- */
+  .settings-field{margin-bottom:1rem;}
+  .settings-field label{display:block; font-size:0.85rem; color:var(--ink-soft); margin-bottom:0.35rem;}
+  .settings-field input{width:100%; padding:0.6rem 0.7rem; border:1px solid var(--rule-light); border-radius:5px; font-family:inherit; font-size:0.9rem;}
+  .settings-check{display:flex; align-items:center; gap:0.6rem; font-size:0.9rem; margin-bottom:0.6rem;}
+  .settings-check input{accent-color:var(--teal);}
+  .notes-input{display:flex; gap:0.8rem; margin-bottom:1.2rem;}
+  .notes-input textarea{flex:1; min-height:60px; padding:0.7rem; border:1px solid var(--rule-light); border-radius:5px; font-family:inherit; font-size:0.9rem; resize:vertical;}
+  .note-item{padding:0.9rem 0; border-bottom:1px solid var(--rule-light);}
+  .note-item:last-child{border-bottom:none;}
+  .note-item__meta{font-size:0.78rem; color:var(--ink-soft); margin-bottom:0.3rem;}
+  .note-item p{margin:0; font-size:0.9rem;}
+
+  @media (max-width:1100px){
+    .hero-grid, .mid-grid, .tri-grid, .dual-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:800px){
+    .dashboard{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .content{padding:1.2rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="sidebar__logo display">ElderGuardian+</div>
+    <ul class="sidebar__nav" id="sidebarNav">
+      <li><a href="#" class="is-active" data-view="overview">Overview</a></li>
+      <li><a href="#" data-view="patients">Patients</a></li>
+      <li><a href="#" data-view="alerts">Alerts</a></li>
+      <li><a href="#" data-view="activity">Activity</a></li>
+      <li><a href="#" data-view="medications">Medications</a></li>
+      <li><a href="#" data-view="sensors">Sensors</a></li>
+      <li><a href="#" data-view="robot">Robot</a></li>
+      <li><a href="#" data-view="ai-insights">AI Insights</a></li>
+      <li><a href="#" data-view="messages">Messages</a></li>
+      <li><a href="#" data-view="doctor-notes">Doctor Notes</a></li>
+      <li><a href="#" data-view="settings">Settings</a></li>
+    </ul>
+    <ul class="sidebar__bottom">
+      <li><a href="#">Doctor Profile</a></li>
+      <li><a href="#">Help</a></li>
+      <li><a href="#">Sign Out</a></li>
+    </ul>
+  </aside>
+
+  <div class="main">
+    <!-- ================= TOP BAR ================= -->
+    <div class="topbar">
+      <div class="topbar__title" id="topbarTitle">Patient Overview</div>
+      <div class="patient-select">
+        <button class="patient-select__btn">Ahmed Hassan ▾</button>
+      </div>
+      <div class="topbar__right">
+        <span><span class="conn-dot"></span>System Connected</span>
+        <button type="button" class="link" id="showEmergency" style="background:none; border:none; color:var(--ink-soft); text-decoration:underline; font-size:0.85rem;">View emergency example</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- ================= EMERGENCY BANNER ================= -->
+      <div class="emergency-banner" id="emergencyBanner">
+        <h3>Emergency Alert</h3>
+        <p><b>SOS triggered — Ahmed Hassan</b><br>Robot detected an emergency request.</p>
+        <div class="emergency-banner__meta">Today — 18:42 · Location: Living Room · Robot: Online · Nearby sensor: Motion (Living Room) — recent activity detected</div>
+        <div class="emergency-actions">
+          <button class="btn btn-emergency">Review Emergency</button>
+          <button class="btn btn-outline">Contact Family</button>
+          <button class="btn btn-outline" id="dismissEmergency">Dismiss</button>
+        </div>
+      </div>
+
+      <div class="view-container">
+      <div class="view-panel is-active" data-view="overview" id="view-overview">
+
+      <!-- ================= HERO: 3D HOME + PATIENT ================= -->
+      <div class="hero-grid">
+        <div class="card home3d-card">
+          <div class="home3d__modes" id="homeModes">
+            <button class="mode-btn is-active" data-mode="overview">Overview</button>
+            <button class="mode-btn" data-mode="activity">Activity</button>
+            <button class="mode-btn" data-mode="sensors">Sensors</button>
+            <button class="mode-btn" data-mode="robot">Robot</button>
+          </div>
+          <div class="home3d__canvas" id="home3dHost"></div>
+          <div class="home3d__rooms" id="roomButtons">
+            <button class="room-btn" data-room="living">Living Room</button>
+            <button class="room-btn" data-room="bedroom">Bedroom</button>
+            <button class="room-btn" data-room="kitchen">Kitchen</button>
+            <button class="room-btn" data-room="entrance">Entrance</button>
+          </div>
+        </div>
+
+        <div class="patient-stack">
+          <div class="card patient-header">
+            <h2 class="display">Ahmed Hassan</h2>
+            <div class="patient-header__meta">
+              <span>Age 72</span><span>Care system active</span><span>Last synchronization: 2 minutes ago</span>
+            </div>
+          </div>
+          <div class="card status-card">
+            <h3>Ahmed is within his usual routine</h3>
+            <p>No significant changes detected today.</p>
+            <div class="status-band"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= AI INSIGHT ================= -->
+      <div class="card ai-card">
+        <p class="ai-card__label">AI-ASSISTED INSIGHT</p>
+        <p><b>Activity has been slightly lower than Ahmed's usual afternoon pattern over the last 3 days.</b></p>
+        <p>The system observed reduced movement across the living room and kitchen compared with his established baseline.</p>
+        <p class="ai-card__confidence">Confidence: Moderate</p>
+        <p class="ai-card__footnote">AI assists the doctor. It does not replace clinical judgment.</p>
+      </div>
+
+      <!-- ================= ACTIVITY + MEDICATION ================= -->
+      <div class="mid-grid">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0;">Activity Pattern</h3>
+            <div class="chart-toggle" id="chartToggle">
+              <button class="mode-btn is-active" data-range="today">Today</button>
+              <button class="mode-btn" data-range="7d">7 Days</button>
+              <button class="mode-btn" data-range="30d">30 Days</button>
+            </div>
+          </div>
+          <svg class="chart-svg" id="activityChart" viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="chart-legend">
+            <span><span class="legend-swatch" style="background:var(--teal); opacity:0.25;"></span>Usual range</span>
+            <span><span class="legend-swatch" style="background:var(--ink);"></span>Observed</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Medication Adherence</h3>
+          <div class="med-row"><span>Morning</span><span class="med-status confirmed">Confirmed</span></div>
+          <div class="med-row"><span>Afternoon</span><span class="med-status confirmed">Confirmed</span></div>
+          <div class="med-row"><span>Evening</span><span class="med-status not-confirmed">Not confirmed</span></div>
+          <div class="med-total">7-day adherence<b>91%</b></div>
+          <p class="sample-note">Sample data for illustration only.</p>
+        </div>
+      </div>
+
+      <!-- ================= TIMELINE ================= -->
+      <div class="card">
+        <h3>Daily Routine Timeline</h3>
+        <ul class="timeline">
+          <li><time>07:10</time><span>Bedroom activity</span></li>
+          <li><time>07:25</time><span>Kitchen activity</span></li>
+          <li><time>07:40</time><span>Medication confirmed</span></li>
+          <li><time>08:15</time><span>Living room activity</span></li>
+          <li><time>11:30</time><span>Robot reminder completed</span></li>
+          <li><time>13:05</time><span>Kitchen activity</span></li>
+          <li><time>18:40</time><span>Medication reminder</span></li>
+        </ul>
+      </div>
+
+      <!-- ================= ALERTS / SENSORS / ROBOT ================= -->
+      <div class="tri-grid">
+        <div class="card">
+          <h3>Alert Center</h3>
+          <div class="alert-row" data-tier="important">
+            <div class="alert-row__top"><span>Unusual inactivity — Mona Ali</span><span class="alert-tag important">Important</span></div>
+            <div class="alert-detail">14:20 today. Reduced movement in bedroom and living room over a 3-hour window compared with baseline.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="critical">
+            <div class="alert-row__top"><span>SOS triggered — Ahmed Hassan</span><span class="alert-tag critical">Critical</span></div>
+            <div class="alert-detail">18:42 today. Robot detected an emergency request in the living room.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="info">
+            <div class="alert-row__top"><span>Robot battery low — Omar Khaled</span><span class="alert-tag info">Informational</span></div>
+            <div class="alert-detail">09:05 today. Battery at 18%, robot returning to charging dock.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Sensor Ecosystem</h3>
+          <div class="sensor-row" data-room="bedroom"><span>Bedroom — Bed / Pressure</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row" data-room="living"><span>Living Room — Motion</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row" data-room="entrance"><span>Entrance — Door</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row" data-room="kitchen"><span>Kitchen — Temperature</span><span class="sensor-status">Normal</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Robot Status</h3>
+          <div class="robot-status-row"><span>Robot</span><span>Connected</span></div>
+          <div class="robot-status-row"><span>Battery</span><span>82%</span></div>
+          <div class="robot-status-row"><span>Charging</span><span>Not required</span></div>
+          <div class="robot-status-row"><span>Last activity</span><span>12 minutes ago</span></div>
+          <div class="robot-status-row"><span>Location</span><span>Living Room</span></div>
+          <div class="robot-actions">
+            <button id="viewRobotBtn">View Robot</button>
+            <button>Send Reminder</button>
+            <button>Send Message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TRENDS / HISTORY ================= -->
+      <div class="dual-grid">
+        <div class="card">
+          <h3>Wellness Trends</h3>
+          <div class="trend-row"><span>Activity</span><span class="trend-value">Stable <svg class="spark" viewBox="0 0 50 16"><polyline points="0,8 10,7 20,9 30,6 40,8 50,7" fill="none" stroke="#4F8079" stroke-width="2"/></svg></span></div>
+          <div class="trend-row"><span>Sleep Pattern</span><span class="trend-value">Slight change <svg class="spark" viewBox="0 0 50 16"><polyline points="0,6 10,7 20,6 30,10 40,11 50,9" fill="none" stroke="#B7854F" stroke-width="2"/></svg></span></div>
+          <div class="trend-row"><span>Medication Adherence</span><span class="trend-value">Improving <svg class="spark" viewBox="0 0 50 16"><polyline points="0,12 10,10 20,9 30,7 40,6 50,4" fill="none" stroke="#4F8079" stroke-width="2"/></svg></span></div>
+          <div class="trend-row"><span>Daily Routine</span><span class="trend-value">Consistent <svg class="spark" viewBox="0 0 50 16"><polyline points="0,8 10,8 20,7 30,8 40,8 50,7" fill="none" stroke="#4F8079" stroke-width="2"/></svg></span></div>
+        </div>
+
+        <div class="card">
+          <h3>Patient History</h3>
+          <div class="history-filters">
+            <button class="is-active">All</button><button>Alerts</button><button>Medication</button><button>Activity</button>
+          </div>
+          <div class="history-item"><time>Today</time><span>SOS event reviewed by Dr. Layla Mansour</span></div>
+          <div class="history-item"><time>Yesterday</time><span>Evening medication not confirmed</span></div>
+          <div class="history-item"><time>3 days ago</time><span>Family message: "Visited for lunch, all well"</span></div>
+          <div class="history-item"><time>5 days ago</time><span>Routine change noted: later wake time</span></div>
+        </div>
+      </div>
+
+      <!-- ================= DOCTOR NOTES ================= -->
+      <div class="card">
+        <h3>Doctor Notes</h3>
+        <div class="notes-input">
+          <textarea id="noteText" placeholder="Add a note…"></textarea>
+          <button class="btn btn-outline" id="addNoteBtn" style="align-self:flex-start;">Add note</button>
+        </div>
+        <div id="notesList">
+          <div class="note-item"><div class="note-item__meta">Dr. Layla Mansour — 2 days ago</div><p>Discussed reduced afternoon activity with family. Follow up in one week.</p></div>
+        </div>
+      </div>
+
+      </div><!-- /view-overview -->
+
+      <!-- ================= PATIENTS ================= -->
+      <div class="view-panel" data-view="patients" id="view-patients">
+        <div class="card">
+          <h3>My Patients</h3>
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Age</th><th>Status</th><th>Last activity</th><th>Last sync</th><th></th></tr></thead>
+            <tbody id="patientsTableBody">
+              <tr data-name="Ahmed Hassan"><td>Ahmed Hassan</td><td>72</td><td><span class="status-text normal">Normal</span></td><td>Living room activity</td><td>2 min ago</td><td><button class="row-view-btn">View</button></td></tr>
+              <tr data-name="Mona Ali"><td>Mona Ali</td><td>68</td><td><span class="status-text attn">Needs attention</span></td><td>Bedroom — low movement</td><td>14 min ago</td><td><button class="row-view-btn">View</button></td></tr>
+              <tr data-name="Omar Khaled"><td>Omar Khaled</td><td>75</td><td><span class="status-text important">Important change</span></td><td>SOS reviewed</td><td>6 min ago</td><td><button class="row-view-btn">View</button></td></tr>
+              <tr data-name="Fatima Zahra"><td>Fatima Zahra</td><td>70</td><td><span class="status-text normal">Normal</span></td><td>Kitchen activity</td><td>9 min ago</td><td><button class="row-view-btn">View</button></td></tr>
+              <tr data-name="Youssef Ibrahim"><td>Youssef Ibrahim</td><td>79</td><td><span class="status-text normal">Normal</span></td><td>Medication confirmed</td><td>21 min ago</td><td><button class="row-view-btn">View</button></td></tr>
+            </tbody>
+          </table>
+          <p class="sample-note">Sample data for illustration only.</p>
+        </div>
+      </div>
+
+      <!-- ================= ALERTS ================= -->
+      <div class="view-panel" data-view="alerts" id="view-alerts">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0;">Alert Center</h3>
+            <div class="history-filters" id="alertFilters">
+              <button class="is-active" data-tier="all">All</button>
+              <button data-tier="critical">Critical</button>
+              <button data-tier="important">Important</button>
+              <button data-tier="info">Informational</button>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="critical">
+            <div class="alert-row__top"><span>SOS triggered — Ahmed Hassan</span><span class="alert-tag critical">Critical</span></div>
+            <div class="alert-detail">18:42 today. Robot detected an emergency request in the living room.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="important">
+            <div class="alert-row__top"><span>Unusual inactivity — Mona Ali</span><span class="alert-tag important">Important</span></div>
+            <div class="alert-detail">14:20 today. Reduced movement in bedroom and living room over a 3-hour window compared with baseline.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="important">
+            <div class="alert-row__top"><span>Repeated missed medication — Omar Khaled</span><span class="alert-tag important">Important</span></div>
+            <div class="alert-detail">Two consecutive evening confirmations missed this week.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="info">
+            <div class="alert-row__top"><span>Robot battery low — Omar Khaled</span><span class="alert-tag info">Informational</span></div>
+            <div class="alert-detail">09:05 today. Battery at 18%, robot returning to charging dock.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+          <div class="alert-row" data-tier="info">
+            <div class="alert-row__top"><span>Sensor offline — Fatima Zahra</span><span class="alert-tag info">Informational</span></div>
+            <div class="alert-detail">Kitchen temperature sensor lost connection for 40 minutes, now restored.
+              <div class="alert-actions"><button>Review</button><button>View Patient</button><button>Dismiss</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= ACTIVITY ================= -->
+      <div class="view-panel" data-view="activity" id="view-activity">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 style="margin:0;">Activity Pattern — Ahmed Hassan</h3>
+            <div class="chart-toggle" id="chartToggle2">
+              <button class="mode-btn is-active" data-range="today">Today</button>
+              <button class="mode-btn" data-range="7d">7 Days</button>
+              <button class="mode-btn" data-range="30d">30 Days</button>
+            </div>
+          </div>
+          <svg class="chart-svg" id="activityChart2" viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="chart-legend">
+            <span><span class="legend-swatch" style="background:var(--teal); opacity:0.25;"></span>Usual range</span>
+            <span><span class="legend-swatch" style="background:var(--ink);"></span>Observed</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1.5rem;">
+          <h3>Daily Routine Timeline</h3>
+          <ul class="timeline">
+            <li><time>07:10</time><span>Bedroom activity</span></li>
+            <li><time>07:25</time><span>Kitchen activity</span></li>
+            <li><time>07:40</time><span>Medication confirmed</span></li>
+            <li><time>08:15</time><span>Living room activity</span></li>
+            <li><time>11:30</time><span>Robot reminder completed</span></li>
+            <li><time>13:05</time><span>Kitchen activity</span></li>
+            <li><time>18:40</time><span>Medication reminder</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ================= MEDICATIONS ================= -->
+      <div class="view-panel" data-view="medications" id="view-medications">
+        <div class="card">
+          <h3>Medication Adherence — All Patients</h3>
+          <table class="data-table">
+            <thead><tr><th>Patient</th><th>Morning</th><th>Afternoon</th><th>Evening</th><th>7-day adherence</th></tr></thead>
+            <tbody>
+              <tr><td>Ahmed Hassan</td><td class="med-status confirmed">Confirmed</td><td class="med-status confirmed">Confirmed</td><td class="med-status not-confirmed">Not confirmed</td><td>91%</td></tr>
+              <tr><td>Mona Ali</td><td class="med-status confirmed">Confirmed</td><td class="med-status confirmed">Confirmed</td><td class="med-status confirmed">Confirmed</td><td>97%</td></tr>
+              <tr><td>Omar Khaled</td><td class="med-status not-confirmed">Not confirmed</td><td class="med-status confirmed">Confirmed</td><td class="med-status not-confirmed">Not confirmed</td><td>68%</td></tr>
+              <tr><td>Fatima Zahra</td><td class="med-status confirmed">Confirmed</td><td class="med-status confirmed">Confirmed</td><td class="med-status confirmed">Confirmed</td><td>100%</td></tr>
+              <tr><td>Youssef Ibrahim</td><td class="med-status confirmed">Confirmed</td><td class="med-status not-confirmed">Not confirmed</td><td class="med-status confirmed">Confirmed</td><td>85%</td></tr>
+            </tbody>
+          </table>
+          <p class="sample-note">Sample data for illustration only. ElderGuardian+ tracks confirmation events; it does not manage prescriptions.</p>
+        </div>
+      </div>
+
+      <!-- ================= SENSORS ================= -->
+      <div class="view-panel" data-view="sensors" id="view-sensors">
+        <div class="card">
+          <h3>Sensor Ecosystem — Ahmed Hassan</h3>
+          <div class="sensor-row"><span>Bedroom — Bed / Pressure</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row"><span>Living Room — Motion</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row"><span>Entrance — Door</span><span class="sensor-status">Connected</span></div>
+          <div class="sensor-row"><span>Kitchen — Temperature</span><span class="sensor-status">Normal</span></div>
+          <div class="sensor-row"><span>Living Room — Emergency / SOS</span><span class="sensor-status">Connected</span></div>
+          <p class="sample-note">Select a room on the Overview's 3D home to see sensors highlighted in context.</p>
+        </div>
+      </div>
+
+      <!-- ================= ROBOT ================= -->
+      <div class="view-panel" data-view="robot" id="view-robot">
+        <div class="card" style="max-width:420px;">
+          <h3>Robot Status — Ahmed Hassan</h3>
+          <div class="robot-status-row"><span>Robot</span><span>Connected</span></div>
+          <div class="robot-status-row"><span>Battery</span><span>82%</span></div>
+          <div class="robot-status-row"><span>Charging</span><span>Not required</span></div>
+          <div class="robot-status-row"><span>Last activity</span><span>12 minutes ago</span></div>
+          <div class="robot-status-row"><span>Location</span><span>Living Room</span></div>
+          <div class="robot-actions">
+            <button id="viewRobotBtn2">View on Overview</button>
+            <button>Send Reminder</button>
+            <button>Send Message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= AI INSIGHTS ================= -->
+      <div class="view-panel" data-view="ai-insights" id="view-ai-insights">
+        <div class="card ai-card" style="margin-bottom:1.2rem;">
+          <p class="ai-card__label">AI-ASSISTED INSIGHT · AHMED HASSAN</p>
+          <p><b>Activity has been slightly lower than Ahmed's usual afternoon pattern over the last 3 days.</b></p>
+          <p>The system observed reduced movement across the living room and kitchen compared with his established baseline.</p>
+          <p class="ai-card__confidence">Confidence: Moderate</p>
+          <p class="ai-card__footnote">AI assists the doctor. It does not replace clinical judgment.</p>
+        </div>
+        <div class="card ai-card" style="margin-bottom:1.2rem;">
+          <p class="ai-card__label">AI-ASSISTED INSIGHT · MONA ALI</p>
+          <p><b>Bedroom activity has dropped outside Mona's usual range for the past two nights.</b></p>
+          <p>Combined bed-sensor and motion data suggest a change in sleep or overnight routine.</p>
+          <p class="ai-card__confidence">Confidence: High</p>
+          <p class="ai-card__footnote">AI assists the doctor. It does not replace clinical judgment.</p>
+        </div>
+        <div class="card ai-card">
+          <p class="ai-card__label">AI-ASSISTED INSIGHT · OMAR KHALED</p>
+          <p><b>Medication confirmation pattern has become less consistent this week.</b></p>
+          <p>Two evening confirmations were missed, compared with none in the prior two weeks.</p>
+          <p class="ai-card__confidence">Confidence: Moderate</p>
+          <p class="ai-card__footnote">AI assists the doctor. It does not replace clinical judgment.</p>
+        </div>
+      </div>
+
+      <!-- ================= MESSAGES ================= -->
+      <div class="view-panel" data-view="messages" id="view-messages">
+        <div class="card" style="padding:0; display:grid; grid-template-columns:260px 1fr; min-height:420px; overflow:hidden;">
+          <div style="border-right:1px solid var(--rule-light); padding:1rem;">
+            <div class="thread-item is-active" data-thread="layla">Layla Hassan <span class="thread-sub">Daughter — Ahmed</span></div>
+            <div class="thread-item" data-thread="samir">Samir Ali <span class="thread-sub">Son — Mona</span></div>
+            <div class="thread-item" data-thread="nour">Nour Khaled <span class="thread-sub">Daughter — Omar</span></div>
+          </div>
+          <div style="display:flex; flex-direction:column;">
+            <div id="messageThread" style="flex:1; padding:1.2rem; overflow-y:auto; display:flex; flex-direction:column; gap:0.7rem;">
+              <div class="msg-bubble them">Hi Doctor, just checking in on my father — everything alright today?</div>
+              <div class="msg-bubble me">Yes, Ahmed's activity is within his usual range today. Nothing to be concerned about.</div>
+              <div class="msg-bubble them">That's a relief, thank you.</div>
+            </div>
+            <div style="display:flex; gap:0.6rem; padding:1rem; border-top:1px solid var(--rule-light);">
+              <input type="text" id="messageInput" placeholder="Write a message…" style="flex:1; padding:0.6rem 0.8rem; border:1px solid var(--rule-light); border-radius:5px; font-family:inherit;">
+              <button class="btn btn-primary" id="sendMessageBtn">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= DOCTOR NOTES (full) ================= -->
+      <div class="view-panel" data-view="doctor-notes" id="view-doctor-notes">
+        <div class="card">
+          <h3>Doctor Notes — Ahmed Hassan</h3>
+          <div class="notes-input">
+            <textarea id="noteText2" placeholder="Add a note…"></textarea>
+            <button class="btn btn-outline" id="addNoteBtn2" style="align-self:flex-start;">Add note</button>
+          </div>
+          <div id="notesList2">
+            <div class="note-item"><div class="note-item__meta">Dr. Layla Mansour — 2 days ago</div><p>Discussed reduced afternoon activity with family. Follow up in one week.</p></div>
+            <div class="note-item"><div class="note-item__meta">Dr. Layla Mansour — 9 days ago</div><p>Reviewed monthly activity trend — consistent with prior month.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SETTINGS ================= -->
+      <div class="view-panel" data-view="settings" id="view-settings">
+        <div class="card" style="max-width:480px;">
+          <h3>Doctor Profile</h3>
+          <div class="settings-field"><label>Full name</label><input type="text" value="Dr. Layla Mansour"></div>
+          <div class="settings-field"><label>Email</label><input type="email" value="layla.mansour@elderguardian.example"></div>
+          <div class="settings-field"><label>Specialty</label><input type="text" value="Geriatric Medicine"></div>
+          <h3 style="margin-top:1.6rem;">Notifications</h3>
+          <label class="settings-check"><input type="checkbox" checked> Critical alerts</label>
+          <label class="settings-check"><input type="checkbox" checked> Important changes</label>
+          <label class="settings-check"><input type="checkbox"> Informational updates</label>
+          <label class="settings-check"><input type="checkbox" checked> Family messages</label>
+          <button class="btn btn-primary" id="saveSettingsBtn" style="margin-top:1.4rem;">Save Changes</button>
+          <span id="settingsSaved" style="display:none; margin-left:0.8rem; font-size:0.85rem; color:var(--teal);">Saved</span>
+        </div>
+      </div>
+
+      </div><!-- /view-container -->
+
+      <!-- ================= PRIVACY ================= -->
+      <div class="privacy-line">
+        <span class="conn-dot"></span>
+        <span><b style="color:var(--ink);">Privacy protected</b> — No cameras. No continuous video monitoring. Insights are generated from environmental signals only.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+  // ================= 3D HOME ENVIRONMENT =================
+  function initHome3D(){
+    const host = document.getElementById('home3dHost');
+    if (!host || !window.THREE) return;
+    let width = host.clientWidth, height = host.clientHeight;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(30, width/height, 0.1, 100);
+    camera.position.set(4.6, 4.4, 5.4);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    host.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xF3EEDD, 0.65));
+    const key = new THREE.DirectionalLight(0xFFF1D6, 1.0);
+    key.position.set(4, 6, 3);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024,1024);
+    key.shadow.camera.left=-4; key.shadow.camera.right=4; key.shadow.camera.top=4; key.shadow.camera.bottom=-4;
+    scene.add(key);
+
+    const house = new THREE.Group();
+    scene.add(house);
+
+    const ROOM = 2, GAP = 0.3, OFF = ROOM/2 + GAP/2;
+    const rooms = {
+      living:   { pos:[-OFF, 0,  OFF], color:0xE4DCC7, targetAngle: 0.35 },
+      bedroom:  { pos:[-OFF, 0, -OFF], color:0xEDE6D6, targetAngle: 2.5 },
+      kitchen:  { pos:[ OFF, 0, -OFF], color:0xE2DBC7, targetAngle: -2.5 },
+      entrance: { pos:[ OFF, 0,  OFF], color:0xDCD5C2, targetAngle: -0.35 }
+    };
+
+    const floorMeshes = {}, wallGroups = {};
+    Object.entries(rooms).forEach(([key_, r]) => {
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(ROOM, ROOM),
+        new THREE.MeshStandardMaterial({ color:r.color, roughness:0.9 })
+      );
+      floor.rotation.x = -Math.PI/2;
+      floor.position.set(r.pos[0], 0, r.pos[2]);
+      floor.receiveShadow = true;
+      house.add(floor);
+      floorMeshes[key_] = floor;
+
+      const wallMat = new THREE.MeshStandardMaterial({ color:0xD8D6CF, roughness:0.8 });
+      const wallGroup = new THREE.Group();
+      const backWall = new THREE.Mesh(new THREE.BoxGeometry(ROOM, 0.45, 0.06), wallMat);
+      const outerZ = r.pos[2] + (r.pos[2] >= 0 ? ROOM/2 : -ROOM/2);
+      backWall.position.set(r.pos[0], 0.225, outerZ);
+      wallGroup.add(backWall);
+      house.add(wallGroup);
+      wallGroups[key_] = wallGroup;
+    });
+
+    // simple perimeter walls (outer edges only) for an open dollhouse feel
+    const wallMat2 = new THREE.MeshStandardMaterial({ color:0xD8D6CF, roughness:0.8 });
+    const outerWallN = new THREE.Mesh(new THREE.BoxGeometry(ROOM*2+GAP, 0.4, 0.06), wallMat2);
+    outerWallN.position.set(0, 0.2, -(ROOM+GAP/2));
+    house.add(outerWallN);
+    const outerWallW = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.4, ROOM*2+GAP), wallMat2);
+    outerWallW.position.set(-(ROOM+GAP/2), 0.2, 0);
+    house.add(outerWallW);
+
+    // sensor pucks
+    function makePuck(color){
+      const g = new THREE.Group();
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,0.05,16), new THREE.MeshStandardMaterial({color:0xF5F3EE, roughness:0.6}));
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(0.035,12,12), new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.6}));
+      dot.position.y = 0.04;
+      g.add(base, dot);
+      return g;
+    }
+    const sensorMeshes = {};
+    const sensorSpec = {
+      bedroom:  { offset:[0.4, 0.06, 0.3] },
+      living:   { offset:[-0.3, 0.06, -0.4] },
+      entrance: { offset:[0.2, 0.06, 0.2] },
+      kitchen:  { offset:[-0.2, 0.06, 0.3] }
+    };
+    Object.entries(sensorSpec).forEach(([key_, s]) => {
+      const puck = makePuck(0x4F8079);
+      const r = rooms[key_];
+      puck.position.set(r.pos[0]+s.offset[0], s.offset[1], r.pos[2]+s.offset[2]);
+      puck.visible = false;
+      house.add(puck);
+      sensorMeshes[key_] = puck;
+    });
+
+    // robot marker — a billboard sprite using the exact ElderGuardian+ robot artwork (same SVG used across the site), rendered unlit so scene lighting/shadows can never make it look dark or black
+    const robotSvgMarkup = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-90 -300 180 320">'
+      + '<defs>'
+      + '<radialGradient id="rHeadGrad" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F0EEE7"/><stop offset="100%" stop-color="#C7C4B9"/></radialGradient>'
+      + '<linearGradient id="rDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#E9E7DE"/><stop offset="100%" stop-color="#C2BFB3"/></linearGradient>'
+      + '<linearGradient id="rBaseGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E7E5DC"/><stop offset="100%" stop-color="#B3B0A4"/></linearGradient>'
+      + '<linearGradient id="rFootGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9C9884"/><stop offset="100%" stop-color="#6C6952"/></linearGradient>'
+      + '<linearGradient id="rVisorGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E312B"/><stop offset="100%" stop-color="#101210"/></linearGradient>'
+      + '<linearGradient id="rLightGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3D6961"/><stop offset="50%" stop-color="#6FAA9F"/><stop offset="100%" stop-color="#3D6961"/></linearGradient>'
+      + '</defs>'
+      + '<ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>'
+      + '<ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#rFootGrad)"/>'
+      + '<ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#rFootGrad)"/>'
+      + '<path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#rBaseGrad)"/>'
+      + '<path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#rDomeGrad)"/>'
+      + '<path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>'
+      + '<rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>'
+      + '<circle cx="0" cy="-206" r="66" fill="url(#rHeadGrad)"/>'
+      + '<path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>'
+      + '<ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>'
+      + '<rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#rVisorGrad)"/>'
+      + '<rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#rLightGrad)"/>'
+      + '<ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>'
+      + '</svg>';
+    // rasterize the SVG onto a canvas ourselves (more reliable across browsers than letting TextureLoader parse an SVG data URI directly)
+    const robotCanvas = document.createElement('canvas');
+    robotCanvas.width = 180; robotCanvas.height = 320;
+    const robotCtx = robotCanvas.getContext('2d');
+    const robotTexture = new THREE.CanvasTexture(robotCanvas);
+    robotTexture.generateMipmaps = false;
+    robotTexture.minFilter = THREE.LinearFilter;
+    robotTexture.magFilter = THREE.LinearFilter;
+    robotTexture.wrapS = THREE.ClampToEdgeWrapping;
+    robotTexture.wrapT = THREE.ClampToEdgeWrapping;
+    if ('encoding' in robotTexture) robotTexture.encoding = THREE.sRGBEncoding;
+    const robotImg = new Image();
+    robotImg.onload = () => {
+      robotCtx.clearRect(0, 0, robotCanvas.width, robotCanvas.height);
+      robotCtx.drawImage(robotImg, 0, 0, robotCanvas.width, robotCanvas.height);
+      robotTexture.needsUpdate = true;
+    };
+    robotImg.src = 'data:image/svg+xml;base64,' + btoa(robotSvgMarkup);
+    const robot = new THREE.Sprite(new THREE.SpriteMaterial({ map: robotTexture, transparent:true, depthWrite:false }));
+    const robotW = 0.34, robotH = robotW * (320/180);
+    robot.scale.set(robotW, robotH, 1);
+    robot.center.set(0.5, 0.06);
+    const livingPos = rooms.living.pos;
+    robot.position.set(livingPos[0]-0.3, 0, livingPos[2]+0.3);
+    house.add(robot);
+
+
+    // activity highlight overlays (hidden unless Activity mode)
+    const activityMeshes = {};
+    ['living','kitchen'].forEach(key_ => {
+      const r = rooms[key_];
+      const overlay = new THREE.Mesh(
+        new THREE.PlaneGeometry(ROOM*0.94, ROOM*0.94),
+        new THREE.MeshStandardMaterial({ color:0xD8C9A9, transparent:true, opacity:0 })
+      );
+      overlay.rotation.x = -Math.PI/2;
+      overlay.position.set(r.pos[0], 0.01, r.pos[2]);
+      house.add(overlay);
+      activityMeshes[key_] = overlay;
+    });
+
+    // ---- interaction state ----
+    let mode = 'overview', selectedRoom = null;
+    let targetRotY = 0, targetScale = 1;
+    let isDragging = false, lastX = 0, autoIdle = true, dragRotOffset = 0;
+
+    function applyMode(){
+      Object.values(sensorMeshes).forEach(p => p.visible = (mode === 'sensors'));
+      Object.entries(activityMeshes).forEach(([k, m]) => {
+        m.material.opacity = (mode === 'activity') ? 0.55 : 0;
+      });
+      Object.entries(floorMeshes).forEach(([k, f]) => {
+        const isRobotRoom = (mode === 'robot' && k === 'living');
+        f.material.emissive = new THREE.Color(isRobotRoom ? 0x4F8079 : 0x000000);
+        f.material.emissiveIntensity = isRobotRoom ? 0.15 : 0;
+      });
+      if (mode === 'robot') selectRoom('living', true);
+    }
+
+    function selectRoom(key_, fromMode){
+      selectedRoom = key_;
+      const r = rooms[key_];
+      if (r) { targetRotY = r.targetAngle; targetScale = 1.12; }
+      document.querySelectorAll('.room-btn').forEach(b => b.classList.toggle('is-selected', b.dataset.room === key_));
+      document.querySelectorAll('.sensor-row').forEach(b => b.classList.toggle('is-selected', b.dataset.room === key_));
+      if (!fromMode) autoIdle = false;
+    }
+    window.egSelectRoom = selectRoom;
+    window.egSetHomeMode = (m) => { mode = m; if (m !== 'robot') { targetRotY = dragRotOffset; targetScale = 1; } applyMode(); };
+
+    renderer.domElement.style.touchAction = 'none';
+    renderer.domElement.addEventListener('pointerdown', e => { isDragging = true; lastX = e.clientX; autoIdle = false; });
+    window.addEventListener('pointermove', e => {
+      if (!isDragging) return;
+      dragRotOffset += (e.clientX - lastX) * 0.006;
+      targetRotY = dragRotOffset;
+      lastX = e.clientX;
+    });
+    window.addEventListener('pointerup', () => { isDragging = false; });
+
+    function resize(){
+      width = host.clientWidth; height = host.clientHeight;
+      if (!width || !height) return;
+      camera.aspect = width/height; camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+    window.addEventListener('resize', resize);
+
+    let currentRotY = 0, currentScale = 1;
+    function animate(){
+      requestAnimationFrame(animate);
+      currentRotY += (targetRotY - currentRotY) * 0.06;
+      currentScale += (targetScale - currentScale) * 0.06;
+      house.rotation.y = currentRotY;
+      house.scale.set(currentScale, currentScale, currentScale);
+      renderer.render(scene, camera);
+    }
+    applyMode();
+    animate();
+  }
+  window.addEventListener('load', initHome3D);
+</script>
+
+<script>
+  // ================= UI WIRING =================
+  document.querySelectorAll('#homeModes .mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#homeModes .mode-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      if (window.egSetHomeMode) window.egSetHomeMode(btn.dataset.mode);
+    });
+  });
+  document.querySelectorAll('.room-btn').forEach(btn => {
+    btn.addEventListener('click', () => { if (window.egSelectRoom) window.egSelectRoom(btn.dataset.room); });
+  });
+  document.querySelectorAll('.sensor-row').forEach(row => {
+    row.addEventListener('click', () => {
+      document.querySelectorAll('#homeModes .mode-btn').forEach(b => b.classList.remove('is-active'));
+      document.querySelector('#homeModes .mode-btn[data-mode="sensors"]').classList.add('is-active');
+      if (window.egSetHomeMode) window.egSetHomeMode('sensors');
+      if (window.egSelectRoom) window.egSelectRoom(row.dataset.room);
+    });
+  });
+  document.getElementById('viewRobotBtn').addEventListener('click', () => {
+    document.querySelectorAll('#homeModes .mode-btn').forEach(b => b.classList.remove('is-active'));
+    document.querySelector('#homeModes .mode-btn[data-mode="robot"]').classList.add('is-active');
+    if (window.egSetHomeMode) window.egSetHomeMode('robot');
+  });
+
+  // ---------- Activity chart ----------
+  const chartData = {
+    today: { baseline:[30,60], observed:[38,42,55,60,58,50,44,40,36,34,30,28] },
+    '7d':  { baseline:[35,65], observed:[50,55,48,44,40,38,42] },
+    '30d': { baseline:[32,62], observed:[55,52,50,48,46,44,42,40,44,46,45,43,41,40,42,44,45,43,41,39,38,40,42,44,43,41,39,38,37,36] }
+  };
+  function drawChart(range){
+    const svg = document.getElementById('activityChart');
+    const d = chartData[range];
+    const w = 560, h = 200, pad = 10;
+    const n = d.observed.length;
+    const stepX = (w - pad*2) / (n - 1);
+    const scaleY = v => h - pad - (v/100)*(h-pad*2);
+    const linePts = d.observed.map((v,i) => `${pad+i*stepX},${scaleY(v)}`).join(' ');
+    const baseTop = scaleY(d.baseline[1]), baseBottom = scaleY(d.baseline[0]);
+    svg.innerHTML = `
+      <rect x="${pad}" y="${baseTop}" width="${w-pad*2}" height="${baseBottom-baseTop}" fill="#4F8079" opacity="0.12"/>
+      <polyline points="${linePts}" fill="none" stroke="#1E211D" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    `;
+  }
+  document.querySelectorAll('#chartToggle .mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#chartToggle .mode-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      drawChart(btn.dataset.range);
+    });
+  });
+  drawChart('today');
+
+  // ---------- Alerts expand ----------
+  document.querySelectorAll('.alert-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      row.classList.toggle('is-open');
+    });
+  });
+
+  // ---------- History filters ----------
+  document.querySelectorAll('.history-filters button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.history-filters button').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+  });
+
+  // ---------- Doctor notes ----------
+  document.getElementById('addNoteBtn').addEventListener('click', () => {
+    const text = document.getElementById('noteText').value.trim();
+    if (!text) return;
+    const list = document.getElementById('notesList');
+    const item = document.createElement('div');
+    item.className = 'note-item';
+    item.innerHTML = `<div class="note-item__meta">You — just now</div><p></p>`;
+    item.querySelector('p').textContent = text;
+    list.prepend(item);
+    document.getElementById('noteText').value = '';
+  });
+
+  // ---------- Emergency banner demo ----------
+  document.getElementById('showEmergency').addEventListener('click', () => {
+    document.getElementById('emergencyBanner').classList.add('is-shown');
+  });
+  // ---------- View switching ----------
+  const viewTitles = {
+    overview:'Patient Overview', patients:'My Patients', alerts:'Alert Center', activity:'Activity Pattern',
+    medications:'Medication Adherence', sensors:'Sensor Ecosystem', robot:'Robot Status', 'ai-insights':'AI Insights',
+    messages:'Messages', 'doctor-notes':'Doctor Notes', settings:'Settings'
+  };
+  function showView(name){
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.toggle('is-active', p.dataset.view === name));
+    document.querySelectorAll('#sidebarNav a').forEach(a => a.classList.toggle('is-active', a.dataset.view === name));
+    document.getElementById('topbarTitle').textContent = viewTitles[name] || 'Patient Overview';
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+  document.querySelectorAll('#sidebarNav a').forEach(a => {
+    a.addEventListener('click', (e) => { e.preventDefault(); showView(a.dataset.view); });
+  });
+  document.querySelectorAll('.row-view-btn').forEach(btn => {
+    btn.addEventListener('click', () => showView('overview'));
+  });
+  document.getElementById('viewRobotBtn2').addEventListener('click', () => showView('overview'));
+
+  // ---------- Alerts view: severity filter ----------
+  document.querySelectorAll('#alertFilters button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#alertFilters button').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      const tier = btn.dataset.tier;
+      document.querySelectorAll('#view-alerts .alert-row').forEach(row => {
+        row.style.display = (tier === 'all' || row.dataset.tier === tier) ? '' : 'none';
+      });
+    });
+  });
+
+  // ---------- Activity view: second chart ----------
+  function drawChart2(range){
+    const svg = document.getElementById('activityChart2');
+    if (!svg) return;
+    const d = chartData[range];
+    const w = 560, h = 200, pad = 10;
+    const n = d.observed.length;
+    const stepX = (w - pad*2) / (n - 1);
+    const scaleY = v => h - pad - (v/100)*(h-pad*2);
+    const linePts = d.observed.map((v,i) => `${pad+i*stepX},${scaleY(v)}`).join(' ');
+    const baseTop = scaleY(d.baseline[1]), baseBottom = scaleY(d.baseline[0]);
+    svg.innerHTML = `
+      <rect x="${pad}" y="${baseTop}" width="${w-pad*2}" height="${baseBottom-baseTop}" fill="#4F8079" opacity="0.12"/>
+      <polyline points="${linePts}" fill="none" stroke="#1E211D" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    `;
+  }
+  document.querySelectorAll('#chartToggle2 .mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#chartToggle2 .mode-btn').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      drawChart2(btn.dataset.range);
+    });
+  });
+  drawChart2('today');
+
+  // ---------- Messages ----------
+  const threadReplies = {
+    layla: [["them","Hi Doctor, just checking in on my father — everything alright today?"],["me","Yes, Ahmed's activity is within his usual range today. Nothing to be concerned about."],["them","That's a relief, thank you."]],
+    samir: [["them","How is my mother doing this week?"],["me","There's been a change in her overnight activity — I've flagged it and will keep monitoring closely."]],
+    nour: [["them","We got an alert about my father earlier."],["me","Yes, it was reviewed — he's safe. I'll call you shortly with more detail."]]
+  };
+  function loadThread(name){
+    const el = document.getElementById('messageThread');
+    el.innerHTML = threadReplies[name].map(([who,text]) => `<div class="msg-bubble ${who}"></div>`).join('');
+    [...el.children].forEach((div,i) => div.textContent = threadReplies[name][i][1]);
+  }
+  document.querySelectorAll('.thread-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('is-active'));
+      item.classList.add('is-active');
+      loadThread(item.dataset.thread);
+    });
+  });
+  document.getElementById('sendMessageBtn').addEventListener('click', () => {
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const el = document.getElementById('messageThread');
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble me';
+    bubble.textContent = text;
+    el.appendChild(bubble);
+    el.scrollTop = el.scrollHeight;
+    input.value = '';
+  });
+
+  // ---------- Doctor Notes (full view) ----------
+  document.getElementById('addNoteBtn2').addEventListener('click', () => {
+    const text = document.getElementById('noteText2').value.trim();
+    if (!text) return;
+    const list = document.getElementById('notesList2');
+    const item = document.createElement('div');
+    item.className = 'note-item';
+    item.innerHTML = `<div class="note-item__meta">You — just now</div><p></p>`;
+    item.querySelector('p').textContent = text;
+    list.prepend(item);
+    document.getElementById('noteText2').value = '';
+  });
+
+  // ---------- Settings ----------
+  document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+    const note = document.getElementById('settingsSaved');
+    note.style.display = 'inline';
+    setTimeout(() => note.style.display = 'none', 2000);
+  });
+</script>
+
+<script>
+  let currentLang = 'en';
+  const dict = {
+    "ElderGuardian+ — Doctor Dashboard": "إلدر جارديان+ — لوحة الدكتور",
+    "ElderGuardian+": "إلدر جارديان+",
+    "Overview": "نظرة عامة",
+    "Patients": "المرضى",
+    "Alerts": "التنبيهات",
+    "Activity": "النشاط",
+    "Medications": "الأدوية",
+    "Sensors": "الحساسات",
+    "Robot": "الروبوت",
+    "AI Insights": "ملاحظات الذكاء الاصطناعي",
+    "Messages": "الرسائل",
+    "Doctor Notes": "ملاحظات الدكتور",
+    "Settings": "الإعدادات",
+    "Doctor Profile": "بروفايل الدكتور",
+    "Help": "المساعدة",
+    "Sign Out": "تسجيل الخروج",
+    "Patient Overview": "نظرة عامة على المريض",
+    "Ahmed Hassan ▾": "أحمد حسن ▾",
+    "System Connected": "النظام متصل",
+    "View emergency example": "شوف مثال لحالة طوارئ",
+    "Emergency Alert": "تنبيه طوارئ",
+    "SOS triggered — Ahmed Hassan": "تم تفعيل الطوارئ — أحمد حسن",
+    "Robot detected an emergency request.": "الروبوت رصد طلب طوارئ.",
+    "Today — 18:42 · Location: Living Room · Robot: Online · Nearby sensor: Motion (Living Room) — recent activity detected": "النهاردة — 18:42 · المكان: الصالة · الروبوت: متصل · حساس قريب: حركة (الصالة) — تم رصد نشاط حديث",
+    "Review Emergency": "راجع الطوارئ",
+    "Contact Family": "اتصل بالعائلة",
+    "Dismiss": "تجاهل",
+    "Living Room": "الصالة",
+    "Bedroom": "أوضة النوم",
+    "Kitchen": "المطبخ",
+    "Entrance": "المدخل",
+    "Ahmed Hassan": "أحمد حسن",
+    "Age 72": "العمر 72",
+    "Care system active": "نظام الرعاية شغال",
+    "Last synchronization: 2 minutes ago": "آخر مزامنة: من دقيقتين",
+    "Ahmed is within his usual routine": "أحمد في روتينه المعتاد",
+    "No significant changes detected today.": "مفيش تغيرات مهمة النهاردة.",
+    "AI-ASSISTED INSIGHT": "ملاحظة بمساعدة الذكاء الاصطناعي",
+    "Activity has been slightly lower than Ahmed's usual afternoon pattern over the last 3 days.": "النشاط كان أقل شوية من نمط أحمد المعتاد بعد الضهر في آخر 3 أيام.",
+    "The system observed reduced movement across the living room and kitchen compared with his established baseline.": "النظام لاحظ حركة أقل في الصالة والمطبخ مقارنة بخط الأساس المعتاد له.",
+    "Confidence: Moderate": "درجة الثقة: متوسطة",
+    "AI assists the doctor. It does not replace clinical judgment.": "الذكاء الاصطناعي بيساعد الدكتور. مش بديل عن القرار الطبي.",
+    "Activity Pattern": "نمط النشاط",
+    "Today": "النهاردة",
+    "7 Days": "7 أيام",
+    "30 Days": "30 يوم",
+    "Usual range": "المعدل المعتاد",
+    "Observed": "الملاحظ",
+    "Medication Adherence": "الالتزام بالدواء",
+    "Morning": "الصبح",
+    "Confirmed": "مؤكد",
+    "Afternoon": "بعد الضهر",
+    "Evening": "بالليل",
+    "Not confirmed": "مش مؤكد",
+    "7-day adherence": "الالتزام لمدة 7 أيام",
+    "Sample data for illustration only.": "بيانات تجريبية للتوضيح بس.",
+    "Daily Routine Timeline": "الجدول الزمني للروتين اليومي",
+    "Bedroom activity": "نشاط في أوضة النوم",
+    "Kitchen activity": "نشاط في المطبخ",
+    "Medication confirmed": "تم تأكيد الدواء",
+    "Living room activity": "نشاط في الصالة",
+    "Robot reminder completed": "الروبوت خلّص التذكير",
+    "Medication reminder": "تذكير بالدواء",
+    "Alert Center": "مركز التنبيهات",
+    "Unusual inactivity — Mona Ali": "خمول غير معتاد — منى علي",
+    "Important": "مهم",
+    "14:20 today. Reduced movement in bedroom and living room over a 3-hour window compared with baseline.": "14:20 النهاردة. حركة أقل في أوضة النوم والصالة على مدار 3 ساعات مقارنة بخط الأساس.",
+    "Review": "راجع",
+    "View Patient": "شوف المريض",
+    "Critical": "حرج",
+    "18:42 today. Robot detected an emergency request in the living room.": "18:42 النهاردة. الروبوت رصد طلب طوارئ في الصالة.",
+    "Robot battery low — Omar Khaled": "بطارية الروبوت لسه شوية — عمر خالد",
+    "Informational": "معلوماتي",
+    "09:05 today. Battery at 18%, robot returning to charging dock.": "09:05 النهاردة. البطارية 18%، الروبوت راجع لمحطة الشحن.",
+    "Sensor Ecosystem": "منظومة الحساسات",
+    "Bedroom — Bed / Pressure": "أوضة النوم — السرير / الضغط",
+    "Connected": "متصل",
+    "Living Room — Motion": "الصالة — الحركة",
+    "Entrance — Door": "المدخل — الباب",
+    "Kitchen — Temperature": "المطبخ — الحرارة",
+    "Normal": "طبيعي",
+    "Robot Status": "حالة الروبوت",
+    "Battery": "البطارية",
+    "Charging": "الشحن",
+    "Not required": "مش محتاج",
+    "Last activity": "آخر نشاط",
+    "12 minutes ago": "من 12 دقيقة",
+    "Location": "المكان",
+    "View Robot": "شوف الروبوت",
+    "Send Reminder": "ابعت تذكير",
+    "Send Message": "ابعت رسالة",
+    "Wellness Trends": "اتجاهات الصحة العامة",
+    "Stable": "مستقر",
+    "Sleep Pattern": "نمط النوم",
+    "Slight change": "تغير بسيط",
+    "Improving": "بيتحسن",
+    "Daily Routine": "الروتين اليومي",
+    "Consistent": "ثابت",
+    "Patient History": "سجل المريض",
+    "All": "الكل",
+    "Medication": "الدواء",
+    "SOS event reviewed by Dr. Layla Mansour": "تمت مراجعة حدث الطوارئ من د. ليلى منصور",
+    "Yesterday": "إمبارح",
+    "Evening medication not confirmed": "دواء الليل مش متأكد",
+    "3 days ago": "من 3 أيام",
+    "Family message: \"Visited for lunch, all well\"": "رسالة من العائلة: \"زرناه على الغدا، كل حاجة تمام\"",
+    "5 days ago": "من 5 أيام",
+    "Routine change noted: later wake time": "لوحظ تغيّر في الروتين: صحي متأخر",
+    "Add note": "ضيف ملاحظة",
+    "Dr. Layla Mansour — 2 days ago": "د. ليلى منصور — من يومين",
+    "Discussed reduced afternoon activity with family. Follow up in one week.": "اتكلمنا مع العائلة عن قلة النشاط بعد الضهر. متابعة خلال أسبوع.",
+    "My Patients": "مرضاي",
+    "Name": "الاسم",
+    "Age": "العمر",
+    "Status": "الحالة",
+    "Last sync": "آخر مزامنة",
+    "2 min ago": "من دقيقتين",
+    "View": "شوف",
+    "Mona Ali": "منى علي",
+    "Needs attention": "محتاج انتباه",
+    "Bedroom — low movement": "أوضة النوم — حركة قليلة",
+    "14 min ago": "من 14 دقيقة",
+    "Omar Khaled": "عمر خالد",
+    "Important change": "تغيّر مهم",
+    "SOS reviewed": "تمت مراجعة الطوارئ",
+    "6 min ago": "من 6 دقايق",
+    "Fatima Zahra": "فاطمة الزهراء",
+    "9 min ago": "من 9 دقايق",
+    "Youssef Ibrahim": "يوسف إبراهيم",
+    "21 min ago": "من 21 دقيقة",
+    "Repeated missed medication — Omar Khaled": "دوا اتفوّت أكتر من مرة — عمر خالد",
+    "Two consecutive evening confirmations missed this week.": "اتفوّتت تأكيدين لدواء الليل ورا بعض الأسبوع ده.",
+    "Sensor offline — Fatima Zahra": "حساس مقطوع — فاطمة الزهراء",
+    "Kitchen temperature sensor lost connection for 40 minutes, now restored.": "حساس حرارة المطبخ فصل الاتصال لمدة 40 دقيقة، ورجع دلوقتي.",
+    "Activity Pattern — Ahmed Hassan": "نمط النشاط — أحمد حسن",
+    "Medication Adherence — All Patients": "الالتزام بالدواء — كل المرضى",
+    "Patient": "المريض",
+    "Sample data for illustration only. ElderGuardian+ tracks confirmation events; it does not manage prescriptions.": "بيانات تجريبية للتوضيح بس. إلدر جارديان+ بيتابع أحداث التأكيد، مش بيدير الروشتات.",
+    "Sensor Ecosystem — Ahmed Hassan": "منظومة الحساسات — أحمد حسن",
+    "Living Room — Emergency / SOS": "الصالة — الطوارئ / SOS",
+    "Select a room on the Overview's 3D home to see sensors highlighted in context.": "اختار أوضة في البيت ثلاثي الأبعاد في النظرة العامة عشان تشوف الحساسات موضّحة في مكانها.",
+    "Robot Status — Ahmed Hassan": "حالة الروبوت — أحمد حسن",
+    "View on Overview": "شوف في النظرة العامة",
+    "AI-ASSISTED INSIGHT · AHMED HASSAN": "ملاحظة الذكاء الاصطناعي · أحمد حسن",
+    "AI-ASSISTED INSIGHT · MONA ALI": "ملاحظة الذكاء الاصطناعي · منى علي",
+    "Bedroom activity has dropped outside Mona's usual range for the past two nights.": "نشاط أوضة النوم قل عن معدل منى المعتاد في آخر ليلتين.",
+    "Combined bed-sensor and motion data suggest a change in sleep or overnight routine.": "بيانات حساس السرير والحركة مع بعض بتشير لتغيّر في النوم أو روتين الليل.",
+    "Confidence: High": "درجة الثقة: عالية",
+    "AI-ASSISTED INSIGHT · OMAR KHALED": "ملاحظة الذكاء الاصطناعي · عمر خالد",
+    "Medication confirmation pattern has become less consistent this week.": "نمط تأكيد الدواء بقى أقل انتظامًا الأسبوع ده.",
+    "Two evening confirmations were missed, compared with none in the prior two weeks.": "اتفوّتت تأكيدين لدواء الليل، مقابل مفيش أي تفويت في الأسبوعين اللي فاتوا.",
+    "Layla Hassan": "ليلى حسن",
+    "Daughter — Ahmed": "بنت — أحمد",
+    "Samir Ali": "سامر علي",
+    "Son — Mona": "ابن — منى",
+    "Nour Khaled": "نور خالد",
+    "Daughter — Omar": "بنت — عمر",
+    "Hi Doctor, just checking in on my father — everything alright today?": "أهلًا دكتور، بس بطمن على بابا — كل حاجة تمام النهاردة؟",
+    "Yes, Ahmed's activity is within his usual range today. Nothing to be concerned about.": "أيوه، نشاط أحمد في معدله المعتاد النهاردة. مفيش أي حاجة تقلقي.",
+    "That's a relief, thank you.": "الحمد لله، شكرًا ليك.",
+    "Send": "ابعت",
+    "Doctor Notes — Ahmed Hassan": "ملاحظات الدكتور — أحمد حسن",
+    "Dr. Layla Mansour — 9 days ago": "د. ليلى منصور — من 9 أيام",
+    "Reviewed monthly activity trend — consistent with prior month.": "تمت مراجعة اتجاه النشاط الشهري — ثابت زي الشهر اللي فات.",
+    "Full name": "الاسم بالكامل",
+    "Email": "الإيميل",
+    "Specialty": "التخصص",
+    "Notifications": "الإشعارات",
+    "Critical alerts": "التنبيهات الحرجة",
+    "Important changes": "التغيرات المهمة",
+    "Informational updates": "التحديثات المعلوماتية",
+    "Family messages": "رسائل العائلة",
+    "Save Changes": "احفظ التغييرات",
+    "Saved": "اتحفظ",
+    "Privacy protected": "الخصوصية محمية",
+    "— No cameras. No continuous video monitoring. Insights are generated from environmental signals only.": "— من غير كاميرات. من غير مراقبة فيديو مستمرة. الملاحظات بتتولد من إشارات بيئية بس.",
+  };
+  function t(s){ return currentLang === 'ar' ? (dict[s] || s) : s; }
+
+  const origTextMap = new WeakMap();
+  function walkTranslate(root){
+    const skip = new Set(['SCRIPT','STYLE','NOSCRIPT']);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (skip.has(node.parentNode.tagName)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let node;
+    while (node = walker.nextNode()) {
+      if (!origTextMap.has(node)) origTextMap.set(node, node.nodeValue);
+      const original = origTextMap.get(node);
+      const trimmed = original.trim();
+      if (currentLang === 'ar' && dict[trimmed]) {
+        node.nodeValue = original.replace(trimmed, dict[trimmed]);
+      } else {
+        node.nodeValue = original;
+      }
+    }
+  }
+
+  const langToggle = document.createElement('div');
+  langToggle.className = 'lang-toggle';
+  langToggle.innerHTML = `
+    <button type="button" data-lang="en" class="is-active">EN</button>
+    <button type="button" data-lang="ar">AR</button>
+  `;
+  const topbarRight = document.querySelector('.topbar__right');
+  if (topbarRight) {
+    topbarRight.appendChild(langToggle);
+  } else {
+    document.body.appendChild(langToggle);
+  }
+  const langStyle = document.createElement('style');
+  langStyle.textContent = `
+    .lang-toggle{position:static; flex-shrink:0; display:flex; border:1px solid rgba(30,33,29,0.25); border-radius:999px; overflow:hidden; background:rgba(245,243,238,0.92); direction:ltr;}
+    .lang-toggle button{border:none; background:none; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'Public Sans',sans-serif; color:var(--ink-soft); cursor:pointer;}
+    .lang-toggle button.is-active{background:var(--teal); color:#0F1210; font-weight:600;}
+  `;
+  document.head.appendChild(langStyle);
+
+  langToggle.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentLang = btn.dataset.lang;
+      langToggle.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.lang === currentLang));
+      document.documentElement.setAttribute('lang', currentLang);
+      document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+      walkTranslate(document.body);
+    });
+  });
+</script>
+</body>
+</html>

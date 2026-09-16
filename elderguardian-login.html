@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#191C18; --bg-light:#F5F3EE; --ink:#1E211D; --ink-soft:#4B4E48;
+    --teal:#4F8079; --teal-deep:#3E6560; --silver:#C7CCC5; --sand:#D8C9A9; --sand-dark:#B79E77;
+    --rule-dark:rgba(255,255,255,0.14); --rule-light:rgba(30,33,29,0.14);
+    --studio-1:#F3F1EA; --studio-2:#DCE4E1;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  button{font-family:inherit;}
+
+  /* ---------- STAGE: soft studio backdrop ---------- */
+  .stage{position:relative; min-height:100vh; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:3rem 1.5rem; background:radial-gradient(ellipse at 50% 30%, var(--studio-1) 0%, var(--studio-2) 100%);}
+  .stage__blob{position:absolute; border-radius:50%; filter:blur(40px); opacity:0.55; pointer-events:none;}
+  .stage__blob--1{width:420px; height:420px; left:-120px; top:-100px; background:radial-gradient(circle, #E9E3CF 0%, transparent 70%);}
+  .stage__blob--2{width:460px; height:460px; right:-140px; bottom:-140px; background:radial-gradient(circle, #CFE0DA 0%, transparent 70%);}
+
+  .stage__badge{position:absolute; width:58px; height:58px; border-radius:16px; background:rgba(255,255,255,0.55); border:1px solid rgba(255,255,255,0.7); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(30,33,29,0.08); color:var(--teal-deep);}
+  .stage__badge svg{width:26px; height:26px;}
+  .stage__badge--health{left:11%; top:20%;}
+  .stage__badge--home{left:14%; bottom:22%;}
+  .stage__badge--doctor{right:11%; top:20%;}
+  .stage__badge--shield{right:14%; bottom:24%;}
+  @media (max-width:900px){ .stage__badge{display:none;} }
+
+  .stage__robot{position:absolute; left:50%; top:50%; width:280px; height:auto; transform:translate(-142%,-44%); z-index:1; filter:drop-shadow(0 24px 30px rgba(20,22,17,0.14));}
+  .stage__robot svg{width:100%; height:auto; display:block;}
+  @media (max-width:1100px){ .stage__robot{display:none;} }
+
+  .auth-ring{position:absolute; left:50%; top:50%; width:560px; height:560px; transform:translate(-58%,-50%); border-radius:50%; background:radial-gradient(circle at 40% 35%, rgba(111,170,159,0.28), rgba(111,170,159,0.06) 60%, transparent 72%); border:1px solid rgba(111,170,159,0.35); z-index:0;}
+  @media (max-width:1100px){ .auth-ring{display:none;} }
+
+  /* ---------- AUTH CARD ---------- */
+  .auth-card{position:relative; z-index:2; width:100%; max-width:460px; background:rgba(255,255,255,0.92); backdrop-filter:blur(4px); border-radius:22px; padding:2.4rem 2.4rem 2.2rem; box-shadow:0 30px 60px rgba(20,22,17,0.12), 0 4px 16px rgba(20,22,17,0.06); max-height:88vh; overflow-y:auto;}
+  .auth-card__brand{text-align:center; margin-bottom:1.6rem;}
+  .auth-card__logo{width:52px; height:52px; margin:0 auto 0.7rem;}
+  .auth-card__name{font-size:1.5rem; font-weight:700; margin:0 0 0.3rem;}
+  .auth-card__tagline{font-size:0.88rem; color:var(--ink-soft); margin:0;}
+  .scene__eyebrow, .scene__head, .scene__sub{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap;}
+  .robot-light{animation:pulse 3.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:0.55;} 50%{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .robot-light{animation:none !important;} }
+
+
+  /* ---------- AUTH ---------- */
+
+  .form{position:relative;}
+  .form-state{transition:opacity .35s ease, transform .35s ease;}
+  .form-state.is-hidden{display:none;}
+  .form-state.is-leaving{opacity:0; transform:translateY(6px);}
+
+  .form h1{font-size:1.5rem; margin:0 0 0.4rem; text-align:center;}
+  .form__sub{font-size:0.92rem; color:var(--ink-soft); margin:0 0 1.8rem; line-height:1.55; text-align:center;}
+
+  .field{position:relative; margin-bottom:1.1rem;}
+  .field input{width:100%; padding:0.95rem 0.9rem; font-size:0.95rem; font-family:inherit; color:var(--ink); background:#fff; border:1px solid var(--rule-light); border-radius:12px; outline:none; transition:border-color .2s ease, box-shadow .2s ease;}
+  .field input:focus{border-color:var(--teal); box-shadow:0 0 0 3px rgba(79,128,121,0.12);}
+  .field label{position:absolute; left:0.95rem; top:1.02rem; font-size:0.92rem; color:var(--ink-soft); pointer-events:none; transition:opacity .15s ease;}
+  .field input:focus + label, .field input.has-value + label{opacity:0;}
+  .field input[type="email"], .field input[type="password"]{padding-left:2.7rem;}
+  .field input[type="email"] + label, .field input[type="password"] + label{left:2.7rem;}
+  .field input[type="email"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234B4E48' stroke-width='1.6'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='M3 7l9 6 9-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:1rem center; background-size:18px;}
+  .field input[type="password"]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234B4E48' stroke-width='1.6'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:1rem center; background-size:18px;}
+  .field--pw input{padding-right:2.8rem;}
+  .pw-toggle{position:absolute; right:0.9rem; top:0.95rem; background:none; border:none; cursor:pointer; font-size:0.74rem; font-weight:600; color:var(--ink-soft); padding:0.2rem 0.3rem; letter-spacing:0.02em;}
+  .pw-toggle:hover{color:var(--teal-deep);}
+
+  .row-between{display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:var(--ink-soft); margin:0.2rem 0 1.4rem;}
+  .check{display:flex; align-items:center; gap:0.5rem; cursor:pointer;}
+  .check input{accent-color:var(--teal);}
+  .link{color:var(--teal-deep); text-decoration:none; background:none; border:none; cursor:pointer; font-size:inherit; font-family:inherit; padding:0; font-weight:600;}
+  .link:hover{text-decoration:underline;}
+
+  .btn{display:flex; width:100%; align-items:center; justify-content:center; gap:0.6rem; font-size:0.95rem; font-weight:600; padding:0.95rem 1.4rem; border-radius:999px; cursor:pointer; border:1px solid transparent; transition:transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn-primary.is-loading{opacity:0.8; pointer-events:none;}
+  .btn-outline{background:#fff; color:var(--ink); border-color:var(--rule-light); margin-bottom:0.7rem;}
+  .btn-outline:hover{border-color:var(--ink);}
+  button[data-i18n="login.google"]::before{content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' width='18' height='18'%3E%3Cpath fill='%234285F4' d='M45.1 24.5c0-1.6-.1-3.1-.4-4.6H24v9h11.8c-.5 2.7-2 5-4.4 6.6v5.4h7.1c4.1-3.8 6.6-9.4 6.6-16.4z'/%3E%3Cpath fill='%2334A853' d='M24 46c6 0 11-2 14.6-5.4l-7.1-5.4c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.7-3.9-12.4-9.1H4.3v5.6C7.9 41.1 15.3 46 24 46z'/%3E%3Cpath fill='%23FBBC05' d='M11.6 28.2c-.4-1.3-.7-2.7-.7-4.2s.3-2.9.7-4.2v-5.6H4.3C2.8 17.1 2 20.5 2 24s.8 6.9 2.3 9.8l7.3-5.6z'/%3E%3Cpath fill='%23EA4335' d='M24 10.7c3.3 0 6.2 1.1 8.5 3.4l6.3-6.3C34.9 4.3 30 2 24 2 15.3 2 7.9 6.9 4.3 14.2l7.3 5.6c1.7-5.2 6.6-9.1 12.4-9.1z'/%3E%3C/svg%3E"); display:inline-flex; margin-inline-end:0.2rem;}
+  button[data-i18n="login.microsoft"]::before{content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 23' width='18' height='18'%3E%3Crect x='1' y='1' width='10' height='10' fill='%23F25022'/%3E%3Crect x='12' y='1' width='10' height='10' fill='%237FBA00'/%3E%3Crect x='1' y='12' width='10' height='10' fill='%2300A4EF'/%3E%3Crect x='12' y='12' width='10' height='10' fill='%23FFB900'/%3E%3C/svg%3E"); display:inline-flex; margin-inline-end:0.2rem;}
+
+  .divider{display:flex; align-items:center; gap:1rem; margin:1.3rem 0; color:var(--ink-soft); font-size:0.85rem;}
+  .divider::before, .divider::after{content:""; flex:1; height:1px; background:var(--rule-light);}
+
+  .switch-line{text-align:center; font-size:0.9rem; color:var(--ink-soft); margin-top:1.6rem;}
+
+  .role-group{display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.4rem;}
+  .role-pill{font-size:0.85rem; padding:0.55rem 1rem; border-radius:999px; border:1px solid var(--rule-light); background:var(--bg-light); color:var(--ink-soft); cursor:pointer; transition:all .15s ease;}
+  .role-pill.is-selected{border-color:var(--teal); color:var(--ink); background:rgba(79,128,121,0.12);}
+
+  .terms{display:flex; align-items:flex-start; gap:0.6rem; font-size:0.85rem; color:var(--ink-soft); margin-bottom:1.6rem; line-height:1.5;}
+  .terms input{margin-top:0.2rem; accent-color:var(--teal);}
+  .terms a{text-decoration:underline; color:var(--ink-soft);}
+  .terms a:hover{color:var(--ink);}
+
+  .privacy-moment{margin-top:2.4rem; padding-top:1.8rem; border-top:1px solid var(--rule-light);}
+  .privacy-moment h4{font-size:0.92rem; margin:0 0 0.5rem;}
+  .privacy-moment p{font-size:0.86rem; color:var(--ink-soft); line-height:1.55; margin:0 0 0.9rem;}
+  .privacy-tags{display:flex; flex-wrap:wrap; gap:0.5rem;}
+  .privacy-tags span{font-size:0.78rem; color:var(--ink-soft); border:1px solid var(--rule-light); border-radius:4px; padding:0.28rem 0.6rem;}
+
+  .error{font-size:0.8rem; color:#9C5A3C; margin:-0.7rem 0 1rem; display:none;}
+  .error.is-shown{display:block;}
+
+  /* ---------- Role selection ---------- */
+  .role-cards{display:flex; flex-direction:column; gap:1rem; margin-top:1.6rem;}
+  .role-card{border:1px solid var(--rule-light); border-radius:8px; padding:1.3rem; text-align:left; background:var(--bg-light); cursor:pointer; transition:border-color .2s ease;}
+  .role-card:hover{border-color:var(--ink);}
+  .role-card h3{font-size:1.05rem; margin:0 0 0.4rem;}
+  .role-card p{font-size:0.88rem; color:var(--ink-soft); line-height:1.55; margin:0 0 0.9rem;}
+  .role-card__tag{font-size:0.75rem; color:var(--sand-dark); margin-bottom:0.5rem; display:block;}
+
+  /* ---------- Wide panel for doctor flow ---------- */
+  .doctor-mode .auth-card{max-width:560px;}
+
+  /* ---------- Step progress ---------- */
+  .step-progress{display:flex; gap:1.1rem; margin-bottom:1.8rem; flex-wrap:wrap;}
+  .step-progress__item{font-size:0.78rem; color:var(--ink-soft); display:flex; align-items:center; gap:0.4rem;}
+  .step-progress__num{width:18px; height:18px; border-radius:50%; border:1px solid var(--rule-light); display:flex; align-items:center; justify-content:center; font-size:0.68rem;}
+  .step-progress__item.is-active{color:var(--ink); font-weight:600;}
+  .step-progress__item.is-active .step-progress__num{border-color:var(--teal); color:var(--teal);}
+  .step-progress__item.is-done .step-progress__num{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .doctor-step{display:none;}
+  .doctor-step.is-active{display:block;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:0 1rem;}
+  textarea.field-textarea{width:100%; padding:0.9rem; border:1px solid var(--rule-light); border-radius:5px; font-family:inherit; font-size:0.92rem; min-height:80px; resize:vertical; margin-bottom:1.2rem;}
+  select.field-select{width:100%; padding:0.85rem 0.9rem; border:1px solid var(--rule-light); border-radius:5px; font-family:inherit; font-size:0.92rem; color:var(--ink); margin-bottom:1.2rem; background:var(--bg-light);}
+
+  .upload-box{border:1px dashed var(--rule-light); border-radius:6px; padding:1rem; text-align:center; margin-bottom:1.2rem; font-size:0.85rem; color:var(--ink-soft);}
+  .upload-box label{color:var(--ink); text-decoration:underline; cursor:pointer;}
+  .upload-box input[type="file"]{display:none;}
+  .upload-filename{font-size:0.8rem; color:var(--teal); margin-top:0.4rem;}
+
+  .verify-status{display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:var(--sand-dark); border:1px solid var(--rule-light); border-radius:4px; padding:0.4rem 0.8rem; margin:0.4rem 0 1rem;}
+  .verify-note{font-size:0.82rem; color:var(--ink-soft); line-height:1.55; margin-bottom:1.2rem;}
+
+  .preview-card{border:1px solid var(--rule-light); border-radius:8px; padding:1.2rem; margin:1.2rem 0 1.6rem; background:var(--bg-light);}
+  .preview-card__label{font-size:0.75rem; color:var(--sand-dark); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:0.7rem;}
+  .preview-card__head{display:flex; gap:0.8rem; align-items:center; margin-bottom:0.6rem;}
+  .preview-avatar{width:44px; height:44px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.9rem; flex-shrink:0;}
+  .preview-card__name{font-size:1rem; font-weight:600; margin:0;}
+  .preview-card__meta{font-size:0.8rem; color:var(--ink-soft); margin:0;}
+  .preview-card__bio{font-size:0.82rem; color:var(--ink-soft); line-height:1.5; margin:0.5rem 0;}
+  .preview-card__foot{font-size:0.78rem; color:var(--ink-soft); display:flex; justify-content:space-between; margin-top:0.6rem;}
+
+  .doctor-plan{border:1px solid var(--rule-light); border-radius:8px; padding:1.1rem; margin-bottom:0.9rem; cursor:pointer; transition:border-color .2s ease;}
+  .doctor-plan.is-selected{border-color:var(--teal); box-shadow:0 0 0 1px var(--teal);}
+  .doctor-plan h4{font-size:0.98rem; margin:0 0 0.3rem;}
+  .doctor-plan__price{font-size:0.82rem; color:var(--ink-soft); margin-bottom:0.5rem;}
+  .doctor-plan ul{list-style:none; margin:0; padding:0; font-size:0.8rem; color:var(--ink-soft); display:flex; flex-direction:column; gap:0.25rem;}
+  .doctor-plan ul li::before{content:"– ";}
+  .checkout-block{display:none; margin-top:1rem;}
+  .checkout-block.is-shown{display:block;}
+  .order-summary{border-top:1px solid var(--rule-light); border-bottom:1px solid var(--rule-light); padding:0.8rem 0; margin:1rem 0; font-size:0.85rem;}
+  .order-summary div{display:flex; justify-content:space-between; padding:0.25rem 0;}
+
+  .checklist{list-style:none; margin:0 0 1.4rem; padding:0; display:flex; flex-direction:column; gap:0.5rem; font-size:0.9rem;}
+  .checklist li{color:var(--ink);}
+  .checklist li b{color:var(--teal); margin-right:0.4rem;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .stage{padding:5rem 1.2rem 2.5rem;}
+    .auth-card{padding:2rem 1.5rem 1.8rem;}
+  }
+
+  /* ---------- Language toggle ---------- */
+  .lang-toggle{position:fixed; top:1.4rem; right:1.6rem; z-index:40; background:#fff; color:var(--ink-soft); border:1px solid var(--rule-light); border-radius:999px; padding:0.5rem 1.1rem; font-size:0.85rem; font-weight:600; cursor:pointer;}
+  .lang-toggle:hover{color:var(--ink); border-color:var(--ink);}
+  html[dir="rtl"] .lang-toggle{right:auto; left:1.6rem;}
+
+
+  /* ---------- RTL / Arabic ---------- */
+  html[dir="rtl"] body{direction:rtl;}
+  html[dir="rtl"] body.lang-ar, html[dir="rtl"] body.lang-ar .display{font-family:'Tajawal', 'Public Sans', system-ui, sans-serif;}
+  html[dir="rtl"] .switch-line, html[dir="rtl"] .terms, html[dir="rtl"] .check{text-align:right;}
+  html[dir="rtl"] .field--pw .pw-toggle{right:auto; left:0.9rem;}
+  html[dir="rtl"] .role-group, html[dir="rtl"] .privacy-tags, html[dir="rtl"] .step-progress{direction:rtl;}
+  html[dir="rtl"] .field label{left:auto; right:0.95rem;}
+  html[dir="rtl"] .field input[type="email"], html[dir="rtl"] .field input[type="password"]{padding-left:0.9rem; padding-right:2.7rem; background-position:right 1rem center;}
+  html[dir="rtl"] .field input[type="email"] + label, html[dir="rtl"] .field input[type="password"] + label{left:auto; right:2.7rem;}
+  html[dir="rtl"] .field--pw input{padding-left:2.8rem; padding-right:2.7rem;}
+  html[dir="rtl"] .stage__robot{left:auto; right:50%; transform:translate(142%,-44%) scaleX(-1);}
+  html[dir="rtl"] .auth-ring{left:auto; right:50%; transform:translate(58%,-50%);}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <button type="button" class="lang-toggle" id="langToggle" aria-label="Switch language">العربية</button>
+
+  <div class="stage__blob stage__blob--1"></div>
+  <div class="stage__blob stage__blob--2"></div>
+
+  <span class="stage__badge stage__badge--health" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 8.6c0 5-8.8 10.4-8.8 10.4S3.2 13.6 3.2 8.6a4.8 4.8 0 0 1 8.8-2.6A4.8 4.8 0 0 1 20.8 8.6Z"/><path d="M7 12h2l1.2-2.4L11.6 14 13 10l1 2h3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span class="stage__badge stage__badge--home" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9h13v-9" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 19v-5h4v5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span class="stage__badge stage__badge--doctor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="3"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke-linecap="round"/></svg></span>
+  <span class="stage__badge stage__badge--shield" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.5 19 6v6c0 5-3 8-7 9.5C8 20 5 17 5 12V6l7-2.5Z" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+
+  <div class="auth-ring"></div>
+
+  <div class="stage__robot" aria-hidden="true">
+    <svg viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="robotHeadGrad" cx="35%" cy="28%" r="80%">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="55%" stop-color="#F0EEE7"/>
+          <stop offset="100%" stop-color="#C7C4B9"/>
+        </radialGradient>
+        <linearGradient id="robotDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stop-color="#FFFFFF"/>
+          <stop offset="55%" stop-color="#E9E7DE"/>
+          <stop offset="100%" stop-color="#C2BFB3"/>
+        </linearGradient>
+        <linearGradient id="robotBaseGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E7E5DC"/>
+          <stop offset="100%" stop-color="#B3B0A4"/>
+        </linearGradient>
+        <linearGradient id="robotFootGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#9C9884"/>
+          <stop offset="100%" stop-color="#6C6952"/>
+        </linearGradient>
+        <linearGradient id="robotVisorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#2E312B"/>
+          <stop offset="100%" stop-color="#101210"/>
+        </linearGradient>
+        <linearGradient id="robotLightGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#3D6961"/>
+          <stop offset="50%" stop-color="#6FAA9F"/>
+          <stop offset="100%" stop-color="#3D6961"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+      <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+      <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+      <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+      <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+      <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+      <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+      <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+      <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+      <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+      <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+      <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)" class="robot-light"/>
+      <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+    </svg>
+  </div>
+
+  <div class="auth-card">
+    <p class="scene__eyebrow display">ElderGuardian+</p>
+    <h2 class="scene__head display" data-i18n="scene.head">Care, connected.</h2>
+    <p class="scene__sub" data-i18n="scene.sub">Intelligent technology designed to help older adults live more safely, independently, and confidently.</p>
+
+    <div class="auth-card__brand">
+      <svg class="auth-card__logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="brandHeartGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6FAA9F"/><stop offset="100%" stop-color="#3E6560"/>
+          </linearGradient>
+        </defs>
+        <circle cx="22" cy="16" r="5" fill="url(#brandHeartGrad)"/>
+        <circle cx="42" cy="16" r="3.4" fill="url(#brandHeartGrad)"/>
+        <path d="M32 44c-9-6-16-12-16-19a8 8 0 0 1 16-2 8 8 0 0 1 16 2c0 7-7 13-16 19Z" fill="url(#brandHeartGrad)"/>
+      </svg>
+      <p class="auth-card__name display">ElderGuardian+</p>
+      <p class="auth-card__tagline" data-i18n="brand.tagline">Care without constant surveillance.</p>
+    </div>
+
+    <div class="form">
+        <!-- LOGIN -->
+        <div class="form-state" id="loginState">
+          <h1 class="display" data-i18n="login.title">Welcome back</h1>
+          <p class="form__sub" data-i18n="login.sub">Sign in to continue to your ElderGuardian+ experience.</p>
+
+          <form id="loginForm" novalidate>
+            <div class="field">
+              <input type="email" id="loginEmail" required autocomplete="email">
+              <label for="loginEmail" data-i18n="field.email">Email address</label>
+            </div>
+            <div class="field field--pw">
+              <input type="password" id="loginPassword" required autocomplete="current-password">
+              <label for="loginPassword" data-i18n="field.password">Password</label>
+              <button type="button" class="pw-toggle" data-target="loginPassword" data-i18n="pw.show">Show</button>
+            </div>
+            <p class="error" id="loginError" data-i18n="login.error">Enter a valid email and password to continue.</p>
+            <div class="row-between">
+              <label class="check"><input type="checkbox"> <span data-i18n="login.remember">Remember me</span></label>
+              <button type="button" class="link" data-i18n="login.forgot">Forgot password?</button>
+            </div>
+            <button type="submit" class="btn btn-primary" id="loginSubmit" data-i18n="login.signin">Sign In</button>
+          </form>
+
+          <div class="divider" data-i18n="common.or">or</div>
+          <button type="button" class="btn btn-outline" data-i18n="login.google">Continue with Google</button>
+          <button type="button" class="btn btn-outline" data-i18n="login.microsoft">Continue with Microsoft</button>
+
+          <p class="switch-line"><span data-i18n="login.noAccount">Don't have an account?</span> <button type="button" class="link" id="toSignup" data-i18n="login.createOne">Create one</button></p>
+        </div>
+
+        <!-- ROLE SELECTION -->
+        <div class="form-state is-hidden" id="roleSelectState">
+          <h1 class="display" data-i18n="role.title">How will you use ElderGuardian+?</h1>
+          <p class="form__sub" data-i18n="role.sub">Choose the experience that fits your role.</p>
+          <div class="role-cards">
+            <button type="button" class="role-card" id="pickFamily">
+              <h3 data-i18n="role.familyTitle">I'm a Family Member</h3>
+              <p data-i18n="role.familyDesc">Create a care system for an elderly loved one and stay connected to their everyday wellbeing.</p>
+              <span class="btn btn-primary" style="pointer-events:none;" data-i18n="role.familyCta">Continue as Family Member</span>
+            </button>
+            <button type="button" class="role-card" id="pickDoctor">
+              <span class="role-card__tag" data-i18n="role.doctorTag">For healthcare professionals</span>
+              <h3 data-i18n="role.doctorTitle">I'm a Doctor</h3>
+              <p data-i18n="role.doctorDesc">Join ElderGuardian+ to offer professional elderly monitoring and connect with families who need your expertise.</p>
+              <span class="btn btn-outline" style="pointer-events:none;" data-i18n="role.doctorCta">Continue as Doctor</span>
+            </button>
+          </div>
+          <p class="switch-line"><span data-i18n="login.haveAccount">Already have an account?</span> <button type="button" class="link" id="toLoginFromRole" data-i18n="login.signinLink">Sign in</button></p>
+        </div>
+
+        <!-- FAMILY SIGN UP -->
+        <div class="form-state is-hidden" id="familySignupState">
+          <h1 class="display" data-i18n="family.title">Create your family account</h1>
+          <p class="form__sub" data-i18n="family.sub">Connect your care experience and manage the technology that matters most.</p>
+
+          <form id="familyForm" novalidate>
+            <div class="field"><input type="text" id="famName" required autocomplete="name"><label for="famName" data-i18n="field.fullName">Full Name</label></div>
+            <div class="field"><input type="email" id="famEmail" required autocomplete="email"><label for="famEmail" data-i18n="field.emailShort">Email</label></div>
+            <div class="field field--pw"><input type="password" id="famPassword" required autocomplete="new-password"><label for="famPassword" data-i18n="field.password">Password</label><button type="button" class="pw-toggle" data-target="famPassword" data-i18n="pw.show">Show</button></div>
+            <div class="field field--pw"><input type="password" id="famConfirm" required autocomplete="new-password"><label for="famConfirm" data-i18n="field.confirmPassword">Confirm Password</label><button type="button" class="pw-toggle" data-target="famConfirm" data-i18n="pw.show">Show</button></div>
+            <div class="field"><input type="tel" id="famPhone" autocomplete="tel"><label for="famPhone" data-i18n="field.phone">Phone Number</label></div>
+            <select class="field-select" id="famCountry"><option value="" data-i18n="field.country">Country</option><option data-i18n="country.egypt">Egypt</option><option data-i18n="country.saudi">Saudi Arabia</option><option data-i18n="country.uae">United Arab Emirates</option><option data-i18n="common.other">Other</option></select>
+            <select class="field-select" id="famLanguage"><option value="" data-i18n="field.prefLang">Preferred Language</option><option data-i18n="lang.english">English</option><option data-i18n="lang.arabic">Arabic</option></select>
+            <p class="error" id="familyError" data-i18n="family.error">Check your details — passwords must match and all fields are required.</p>
+
+            <p style="font-size:0.87rem; color:var(--ink-soft); margin:0 0 0.7rem;"><span data-i18n="family.caringFor">Who are you caring for?</span> <span style="font-weight:400;" data-i18n="common.optional">(optional)</span></p>
+            <div class="role-group" id="caringForGroup">
+              <button type="button" class="role-pill" data-who="Parent" data-i18n="relation.parent">Parent</button>
+              <button type="button" class="role-pill" data-who="Grandparent" data-i18n="relation.grandparent">Grandparent</button>
+              <button type="button" class="role-pill" data-who="Spouse" data-i18n="relation.spouse">Spouse</button>
+              <button type="button" class="role-pill" data-who="Other loved one" data-i18n="relation.other">Other loved one</button>
+            </div>
+
+            <label class="terms"><input type="checkbox" id="famTerms"> <span data-i18n="terms.agree">I agree to the</span> <a href="#" data-i18n="terms.tos">Terms of Service</a> <span data-i18n="terms.and">and</span> <a href="#" data-i18n="terms.privacy">Privacy Policy</a><span data-i18n="terms.dot">.</span></label>
+            <button type="submit" class="btn btn-primary" id="familySubmit" data-i18n="family.submit">Create Family Account</button>
+          </form>
+          <p class="switch-line"><span data-i18n="login.haveAccount">Already have an account?</span> <button type="button" class="link" id="toLoginFromFamily" data-i18n="login.signinLink">Sign in</button></p>
+        </div>
+
+        <!-- FAMILY SUCCESS -->
+        <div class="form-state is-hidden" id="familySuccessState">
+          <h1 class="display" data-i18n="familySuccess.title">Welcome to ElderGuardian+</h1>
+          <p class="form__sub" data-i18n="familySuccess.sub">Your care journey starts here.</p>
+          <a class="btn btn-primary" href="elderguardian-configurator.html" data-i18n="familySuccess.cta">Set Up Your Care System</a>
+        </div>
+
+        <!-- DOCTOR ONBOARDING -->
+        <div class="form-state is-hidden" id="doctorState">
+          <h1 class="display" id="doctorStepHeading" data-i18n="doctor.step0Title">Join ElderGuardian+ as a Doctor</h1>
+          <p class="form__sub" id="doctorStepSub" data-i18n="doctor.step0Sub">Offer professional elderly monitoring and become part of a connected care ecosystem.</p>
+
+          <div class="step-progress" id="doctorProgress">
+            <span class="step-progress__item is-active" data-step="0"><span class="step-progress__num">1</span><span data-i18n="doctor.progAccount">Account</span></span>
+            <span class="step-progress__item" data-step="1"><span class="step-progress__num">2</span><span data-i18n="doctor.progProfile">Profile</span></span>
+            <span class="step-progress__item" data-step="2"><span class="step-progress__num">3</span><span data-i18n="doctor.progVerify">Verify</span></span>
+            <span class="step-progress__item" data-step="3"><span class="step-progress__num">4</span><span data-i18n="doctor.progSubscribe">Subscribe</span></span>
+            <span class="step-progress__item" data-step="4"><span class="step-progress__num">5</span><span data-i18n="doctor.progDone">Done</span></span>
+          </div>
+
+          <!-- Step 0: Account -->
+          <div class="doctor-step is-active" data-dstep="0">
+            <div class="field"><input type="text" id="docName" required><label for="docName" data-i18n="field.fullName">Full Name</label></div>
+            <div class="field"><input type="email" id="docEmail" required><label for="docEmail" data-i18n="field.profEmail">Professional Email</label></div>
+            <div class="field field--pw"><input type="password" id="docPassword" required><label for="docPassword" data-i18n="field.password">Password</label><button type="button" class="pw-toggle" data-target="docPassword" data-i18n="pw.show">Show</button></div>
+            <div class="field field--pw"><input type="password" id="docConfirm" required><label for="docConfirm" data-i18n="field.confirmPassword">Confirm Password</label><button type="button" class="pw-toggle" data-target="docConfirm" data-i18n="pw.show">Show</button></div>
+            <div class="field"><input type="tel" id="docPhone"><label for="docPhone" data-i18n="field.phone">Phone Number</label></div>
+            <select class="field-select" id="docCountry"><option value="" data-i18n="field.country">Country</option><option data-i18n="country.egypt">Egypt</option><option data-i18n="country.saudi">Saudi Arabia</option><option data-i18n="country.uae">United Arab Emirates</option><option data-i18n="common.other">Other</option></select>
+            <select class="field-select" id="docLanguagePref"><option value="" data-i18n="field.prefLang">Preferred Language</option><option data-i18n="lang.english">English</option><option data-i18n="lang.arabic">Arabic</option></select>
+            <label class="terms"><input type="checkbox" id="docTerms"> <span data-i18n="terms.agree">I agree to the</span> <a href="#" data-i18n="terms.tos">Terms of Service</a> <span data-i18n="terms.and">and</span> <a href="#" data-i18n="terms.privacy">Privacy Policy</a><span data-i18n="terms.dot">.</span></label>
+            <p class="error" id="docStep0Error" data-i18n="doctor.step0Error">Check your details — passwords must match, all fields are required, and you'll need to accept the terms.</p>
+            <button type="button" class="btn btn-primary" id="docStep0Next" data-i18n="common.continue">Continue</button>
+          </div>
+
+          <!-- Step 1: Professional Profile -->
+          <div class="doctor-step" data-dstep="1">
+            <div class="field"><input type="text" id="docDisplayName" placeholder=" "><label for="docDisplayName" data-i18n="doctor.displayName">Professional Display Name</label></div>
+            <select class="field-select" id="docSpecialty">
+              <option value="" data-i18n="doctor.specialty">Specialty</option>
+              <option data-i18n="doctor.specGeriatric">Geriatric Medicine</option><option data-i18n="doctor.specInternal">Internal Medicine</option><option data-i18n="doctor.specFamily">Family Medicine</option>
+              <option data-i18n="doctor.specGeneral">General Practice</option><option data-i18n="doctor.specNeurology">Neurology</option><option data-i18n="doctor.specCardiology">Cardiology</option><option data-i18n="common.other">Other</option>
+            </select>
+            <div class="field"><input type="number" min="0" id="docExperience"><label for="docExperience" data-i18n="doctor.experience">Years of Experience</label></div>
+            <div class="field"><input type="text" id="docLanguages" placeholder=" "><label for="docLanguages" data-i18n="doctor.languages">Languages (comma separated)</label></div>
+            <textarea class="field-textarea" id="docBio" placeholder="Short professional bio" data-i18n-placeholder="doctor.bioPlaceholder"></textarea>
+            <div class="field"><input type="text" id="docAreas" placeholder=" "><label for="docAreas" data-i18n="doctor.areas">Areas of Elderly Care</label></div>
+            <select class="field-select" id="docAvailability"><option value="" data-i18n="doctor.availability">Monitoring Availability</option><option data-i18n="doctor.availToday">Available today</option><option data-i18n="doctor.availWeek">Available this week</option><option data-i18n="doctor.availFewDays">Available in a few days</option></select>
+            <select class="field-select" id="docCommMethod"><option value="" data-i18n="doctor.commMethod">Preferred Communication Method</option><option data-i18n="doctor.commApp">In-app Messages</option><option data-i18n="doctor.commVideo">Video Call</option><option data-i18n="doctor.commPhone">Phone</option></select>
+            <div class="upload-box">
+              <label for="docPhotoUpload" data-i18n="doctor.uploadPhoto">Upload a profile photo</label>
+              <input type="file" id="docPhotoUpload" accept="image/*">
+              <div class="upload-filename" id="docPhotoName"></div>
+            </div>
+
+            <p class="preview-card__label" data-i18n="doctor.previewLabel">How families will see you</p>
+            <div class="preview-card">
+              <div class="preview-card__head">
+                <div class="preview-avatar" id="previewAvatar">DR</div>
+                <div>
+                  <p class="preview-card__name" id="previewName">Dr. —</p>
+                  <p class="preview-card__meta" id="previewSpecialty">Specialty · Experience</p>
+                </div>
+              </div>
+              <p class="preview-card__meta" id="previewLanguages">Languages</p>
+              <p class="preview-card__bio" id="previewBio">Your short professional bio will appear here.</p>
+              <div class="preview-card__foot"><span id="previewAvailability">Availability</span><span data-i18n="doctor.newProvider">New provider — no ratings yet</span></div>
+              <div class="preview-card__foot"><span data-i18n="doctor.priceCheckout">Price shown at checkout</span><span style="text-decoration:underline;" data-i18n="doctor.viewProfile">View Profile</span></div>
+            </div>
+
+            <button type="button" class="btn btn-outline" data-dback="0" data-i18n="common.back">Back</button>
+            <button type="button" class="btn btn-primary" id="docStep1Next" data-i18n="common.continue">Continue</button>
+          </div>
+
+          <!-- Step 2: Verification -->
+          <div class="doctor-step" data-dstep="2">
+            <p class="verify-note" data-i18n="doctor.verifyIntro">Professional verification helps families know that the doctors listed on ElderGuardian+ are genuine healthcare professionals.</p>
+            <div class="field"><input type="text" id="docLicense" placeholder=" "><label for="docLicense" data-i18n="doctor.license">Professional License / Registration Number</label></div>
+            <div class="upload-box"><label for="docIdUpload" data-i18n="doctor.uploadId">Upload professional ID / credential</label><input type="file" id="docIdUpload"><div class="upload-filename" id="docIdName"></div></div>
+            <div class="upload-box"><label for="docDocUpload" data-i18n="doctor.uploadDoc">Upload a supporting document</label><input type="file" id="docDocUpload"><div class="upload-filename" id="docDocName"></div></div>
+            <select class="field-select" id="docVerifyCountry"><option value="" data-i18n="field.country">Country</option><option data-i18n="country.egypt">Egypt</option><option data-i18n="country.saudi">Saudi Arabia</option><option data-i18n="country.uae">United Arab Emirates</option><option data-i18n="common.other">Other</option></select>
+            <div class="field"><input type="text" id="docIssuingAuthority" placeholder=" "><label for="docIssuingAuthority" data-i18n="doctor.issuingAuthority">Issuing Authority</label></div>
+            <span class="verify-status">● <span data-i18n="doctor.verifyStatus">Verification status: Pending</span></span>
+            <p class="verify-note" data-i18n="doctor.verifyNote">Your information will be reviewed by the ElderGuardian+ team. Uploaded documents are not shown publicly.</p>
+            <button type="button" class="btn btn-outline" data-dback="1" data-i18n="common.back">Back</button>
+            <button type="button" class="btn btn-primary" id="docStep2Next" data-i18n="common.continue">Continue</button>
+          </div>
+
+          <!-- Step 3: Subscription -->
+          <div class="doctor-step" data-dstep="3">
+            <p class="form__sub" style="margin-bottom:1.2rem;" data-i18n="doctor.subIntro">Doctors pay a simple monthly subscription to maintain their professional presence on ElderGuardian+ and offer monitoring services to families.</p>
+            <div class="doctor-plan" data-plan="Professional">
+              <h4 data-i18n="plan.professional">Professional</h4>
+              <p class="doctor-plan__price" data-i18n="plan.priceLine">EGP / month — price configured by platform · Billed monthly</p>
+              <ul><li data-i18n="plan.f1">Public doctor profile</li><li data-i18n="plan.f2">Appear in doctor search</li><li data-i18n="plan.f3">Doctor dashboard</li><li data-i18n="plan.f4">Manage monitoring patients</li><li data-i18n="plan.f5">Secure family communication</li><li data-i18n="plan.f6">Activity and wellness insights</li><li data-i18n="plan.f7">Medication adherence information</li><li data-i18n="plan.f8">Alerts</li><li data-i18n="plan.f9">AI-assisted care summaries</li><li data-i18n="plan.f10">Doctor notes</li></ul>
+            </div>
+            <div class="doctor-plan" data-plan="Professional Plus">
+              <h4 data-i18n="plan.professionalPlus">Professional Plus</h4>
+              <p class="doctor-plan__price" data-i18n="plan.priceLine">EGP / month — price configured by platform · Billed monthly</p>
+              <ul><li data-i18n="plan.p1">Everything in Professional</li><li data-i18n="plan.p2">Enhanced profile visibility</li><li data-i18n="plan.p3">Expanded monitoring tools</li><li data-i18n="plan.p4">Additional communication features</li><li data-i18n="plan.p5">Advanced care insights</li></ul>
+            </div>
+
+            <div class="checkout-block" id="doctorCheckoutBlock">
+              <div class="order-summary">
+                <div><span data-i18n="checkout.subscription">ElderGuardian+ Doctor Subscription</span><span id="checkoutPlanName">—</span></div>
+                <div><span data-i18n="checkout.billing">Billing</span><span data-i18n="checkout.monthly">Monthly</span></div>
+                <div><span data-i18n="checkout.total">Total</span><span data-i18n="checkout.egpConfigured">EGP — configured by platform</span></div>
+              </div>
+              <div class="field"><input type="text" id="docCardName" placeholder=" "><label for="docCardName" data-i18n="checkout.cardholder">Cardholder Name</label></div>
+              <div class="field"><input type="text" id="docCardNumber" maxlength="19" placeholder=" "><label for="docCardNumber" data-i18n="checkout.cardNumber">Card Number</label></div>
+              <div class="field-row">
+                <div class="field"><input type="text" id="docCardExpiry" maxlength="5" placeholder=" "><label for="docCardExpiry" data-i18n="checkout.expiry">Expiry Date</label></div>
+                <div class="field"><input type="text" id="docCardCvc" maxlength="4" placeholder=" "><label for="docCardCvc" data-i18n="checkout.cvc">CVC</label></div>
+              </div>
+              <p class="error" id="docPaymentError" data-i18n="checkout.error">Check your payment details and try again.</p>
+              <button type="button" class="btn btn-outline" id="changePlanBtn" data-i18n="checkout.changePlan">Change Plan</button>
+              <button type="button" class="btn btn-primary" id="startSubscriptionBtn" data-i18n="checkout.startSub">Start Professional Subscription</button>
+            </div>
+
+            <button type="button" class="btn btn-outline" data-dback="2" id="docStep3Back" data-i18n="common.back">Back</button>
+          </div>
+
+          <!-- Step 4: Complete -->
+          <div class="doctor-step" data-dstep="4">
+            <ul class="checklist">
+              <li><b>✓</b><span data-i18n="doctor.done1">Account created</span></li>
+              <li><b>✓</b><span data-i18n="doctor.done2">Professional profile submitted</span></li>
+              <li><b>✓</b><span data-i18n="doctor.done3">Verification pending</span></li>
+              <li><b>✓</b><span data-i18n="doctor.done4">Subscription active</span></li>
+            </ul>
+            <p class="form__sub" data-i18n="doctor.doneSub">Once your professional profile is approved, it will become visible to families looking for elderly monitoring services.</p>
+            <a class="btn btn-primary" href="elderguardian-doctor-dashboard.html" data-i18n="doctor.goDashboard">Go to Doctor Dashboard</a>
+            <button type="button" class="btn btn-outline" id="previewProfileBtn" data-i18n="doctor.previewMyProfile">Preview My Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="privacy-moment">
+        <h4 class="display" data-i18n="privacy.title">Your privacy matters.</h4>
+        <p data-i18n="privacy.desc">ElderGuardian+ is designed to provide intelligent care without constant visual surveillance.</p>
+        <div class="privacy-tags"><span data-i18n="privacy.tag1">No cameras</span><span data-i18n="privacy.tag2">Meaningful signals</span><span data-i18n="privacy.tag3">Smarter care</span></div>
+      </div>
+    </div>
+  </div>
+<script>
+  // ================= i18n (English / Arabic) =================
+  const I18N = {
+    en: {
+      "brand.tagline": "Care without constant surveillance.",
+      "scene.head": "Care, connected.",
+      "scene.sub": "Intelligent technology designed to help older adults live more safely, independently, and confidently.",
+      "scene.headDoctor": "Extend your care beyond the clinic.",
+      "scene.subDoctor": "Join ElderGuardian+ to offer professional elderly monitoring and connect with families who need your expertise.",
+      "login.title": "Welcome back",
+      "login.sub": "Sign in to continue to your ElderGuardian+ experience.",
+      "field.email": "Email address",
+      "field.password": "Password",
+      "pw.show": "Show",
+      "pw.hide": "Hide",
+      "login.error": "Enter a valid email and password to continue.",
+      "login.remember": "Remember me",
+      "login.forgot": "Forgot password?",
+      "login.signin": "Sign In",
+      "login.signingIn": "Signing in…",
+      "login.signedIn": "Signed in",
+      "common.or": "or",
+      "login.google": "Continue with Google",
+      "login.microsoft": "Continue with Microsoft",
+      "login.noAccount": "Don't have an account?",
+      "login.createOne": "Create one",
+      "role.title": "How will you use ElderGuardian+?",
+      "role.sub": "Choose the experience that fits your role.",
+      "role.familyTitle": "I'm a Family Member",
+      "role.familyDesc": "Create a care system for an elderly loved one and stay connected to their everyday wellbeing.",
+      "role.familyCta": "Continue as Family Member",
+      "role.doctorTag": "For healthcare professionals",
+      "role.doctorTitle": "I'm a Doctor",
+      "role.doctorDesc": "Join ElderGuardian+ to offer professional elderly monitoring and connect with families who need your expertise.",
+      "role.doctorCta": "Continue as Doctor",
+      "login.haveAccount": "Already have an account?",
+      "login.signinLink": "Sign in",
+      "family.title": "Create your family account",
+      "family.sub": "Connect your care experience and manage the technology that matters most.",
+      "field.fullName": "Full Name",
+      "field.emailShort": "Email",
+      "field.confirmPassword": "Confirm Password",
+      "field.phone": "Phone Number",
+      "field.country": "Country",
+      "country.egypt": "Egypt",
+      "country.saudi": "Saudi Arabia",
+      "country.uae": "United Arab Emirates",
+      "common.other": "Other",
+      "field.prefLang": "Preferred Language",
+      "lang.english": "English",
+      "lang.arabic": "Arabic",
+      "family.error": "Check your details — passwords must match and all fields are required.",
+      "family.caringFor": "Who are you caring for?",
+      "common.optional": "(optional)",
+      "relation.parent": "Parent",
+      "relation.grandparent": "Grandparent",
+      "relation.spouse": "Spouse",
+      "relation.other": "Other loved one",
+      "terms.agree": "I agree to the",
+      "terms.tos": "Terms of Service",
+      "terms.and": "and",
+      "terms.privacy": "Privacy Policy",
+      "terms.dot": ".",
+      "family.submit": "Create Family Account",
+      "family.creating": "Creating account…",
+      "familySuccess.title": "Welcome to ElderGuardian+",
+      "familySuccess.sub": "Your care journey starts here.",
+      "familySuccess.cta": "Set Up Your Care System",
+      "doctor.step0Title": "Join ElderGuardian+ as a Doctor",
+      "doctor.step0Sub": "Offer professional elderly monitoring and become part of a connected care ecosystem.",
+      "doctor.progAccount": "Account",
+      "doctor.progProfile": "Profile",
+      "doctor.progVerify": "Verify",
+      "doctor.progSubscribe": "Subscribe",
+      "doctor.progDone": "Done",
+      "field.profEmail": "Professional Email",
+      "doctor.step0Error": "Check your details — passwords must match, all fields are required, and you'll need to accept the terms.",
+      "common.continue": "Continue",
+      "common.back": "Back",
+      "doctor.displayName": "Professional Display Name",
+      "doctor.specialty": "Specialty",
+      "doctor.specGeriatric": "Geriatric Medicine",
+      "doctor.specInternal": "Internal Medicine",
+      "doctor.specFamily": "Family Medicine",
+      "doctor.specGeneral": "General Practice",
+      "doctor.specNeurology": "Neurology",
+      "doctor.specCardiology": "Cardiology",
+      "doctor.experience": "Years of Experience",
+      "doctor.languages": "Languages (comma separated)",
+      "doctor.bioPlaceholder": "Short professional bio",
+      "doctor.areas": "Areas of Elderly Care",
+      "doctor.availability": "Monitoring Availability",
+      "doctor.availToday": "Available today",
+      "doctor.availWeek": "Available this week",
+      "doctor.availFewDays": "Available in a few days",
+      "doctor.commMethod": "Preferred Communication Method",
+      "doctor.commApp": "In-app Messages",
+      "doctor.commVideo": "Video Call",
+      "doctor.commPhone": "Phone",
+      "doctor.uploadPhoto": "Upload a profile photo",
+      "doctor.previewLabel": "How families will see you",
+      "doctor.newProvider": "New provider — no ratings yet",
+      "doctor.priceCheckout": "Price shown at checkout",
+      "doctor.viewProfile": "View Profile",
+      "doctor.specialtyPlaceholder": "Specialty",
+      "doctor.experiencePlaceholder": "Experience",
+      "doctor.experienceSuffix": "+ years",
+      "doctor.languagesPlaceholder": "Languages",
+      "doctor.bioPlaceholderText": "Your short professional bio will appear here.",
+      "doctor.availabilityPlaceholder": "Availability",
+      "doctor.drPrefix": "Dr.",
+      "doctor.drDash": "Dr. —",
+      "upload.selected": "Selected:",
+      "doctor.verifyIntro": "Professional verification helps families know that the doctors listed on ElderGuardian+ are genuine healthcare professionals.",
+      "doctor.license": "Professional License / Registration Number",
+      "doctor.uploadId": "Upload professional ID / credential",
+      "doctor.uploadDoc": "Upload a supporting document",
+      "doctor.issuingAuthority": "Issuing Authority",
+      "doctor.verifyStatus": "Verification status: Pending",
+      "doctor.verifyNote": "Your information will be reviewed by the ElderGuardian+ team. Uploaded documents are not shown publicly.",
+      "doctor.subIntro": "Doctors pay a simple monthly subscription to maintain their professional presence on ElderGuardian+ and offer monitoring services to families.",
+      "plan.professional": "Professional",
+      "plan.professionalPlus": "Professional Plus",
+      "plan.priceLine": "EGP / month — price configured by platform · Billed monthly",
+      "plan.f1": "Public doctor profile",
+      "plan.f2": "Appear in doctor search",
+      "plan.f3": "Doctor dashboard",
+      "plan.f4": "Manage monitoring patients",
+      "plan.f5": "Secure family communication",
+      "plan.f6": "Activity and wellness insights",
+      "plan.f7": "Medication adherence information",
+      "plan.f8": "Alerts",
+      "plan.f9": "AI-assisted care summaries",
+      "plan.f10": "Doctor notes",
+      "plan.p1": "Everything in Professional",
+      "plan.p2": "Enhanced profile visibility",
+      "plan.p3": "Expanded monitoring tools",
+      "plan.p4": "Additional communication features",
+      "plan.p5": "Advanced care insights",
+      "checkout.subscription": "ElderGuardian+ Doctor Subscription",
+      "checkout.billing": "Billing",
+      "checkout.monthly": "Monthly",
+      "checkout.total": "Total",
+      "checkout.egpConfigured": "EGP — configured by platform",
+      "checkout.cardholder": "Cardholder Name",
+      "checkout.cardNumber": "Card Number",
+      "checkout.expiry": "Expiry Date",
+      "checkout.cvc": "CVC",
+      "checkout.error": "Check your payment details and try again.",
+      "checkout.changePlan": "Change Plan",
+      "checkout.startSub": "Start Professional Subscription",
+      "checkout.processing": "Processing…",
+      "doctor.done1": "Account created",
+      "doctor.done2": "Professional profile submitted",
+      "doctor.done3": "Verification pending",
+      "doctor.done4": "Subscription active",
+      "doctor.doneSub": "Once your professional profile is approved, it will become visible to families looking for elderly monitoring services.",
+      "doctor.goDashboard": "Go to Doctor Dashboard",
+      "doctor.previewMyProfile": "Preview My Profile",
+      "doctor.headStep0Title": "Create your professional account",
+      "doctor.headStep0Sub": "",
+      "doctor.headStep1Title": "Tell families about your expertise",
+      "doctor.headStep1Sub": "",
+      "doctor.headStep2Title": "Verify your professional identity",
+      "doctor.headStep2Sub": "",
+      "doctor.headStep3Title": "Choose your ElderGuardian+ provider plan",
+      "doctor.headStep3Sub": "Doctors pay a simple monthly subscription to maintain their professional presence on ElderGuardian+.",
+      "doctor.headStep4Title": "Welcome to ElderGuardian+",
+      "doctor.headStep4Sub": "Your professional account has been created successfully.",
+      "privacy.title": "Your privacy matters.",
+      "privacy.desc": "ElderGuardian+ is designed to provide intelligent care without constant visual surveillance.",
+      "privacy.tag1": "No cameras",
+      "privacy.tag2": "Meaningful signals",
+      "privacy.tag3": "Smarter care",
+      "lang.toggleLabel": "العربية"
+    },
+    ar: {
+      "brand.tagline": "رعاية بلا مراقبة دائمة.",
+      "scene.head": "رعاية، بلا انقطاع.",
+      "scene.sub": "تقنية ذكية صُممت لمساعدة كبار السن على العيش بأمان واستقلالية وثقة أكبر.",
+      "scene.headDoctor": "امتدّ برعايتك إلى ما بعد العيادة.",
+      "scene.subDoctor": "انضم إلى ElderGuardian+ لتقديم خدمات مراقبة صحية احترافية للمسنين والتواصل مع العائلات المحتاجة لخبرتك.",
+      "login.title": "أهلاً بعودتك",
+      "login.sub": "سجّل الدخول لمتابعة تجربتك مع ElderGuardian+.",
+      "field.email": "البريد الإلكتروني",
+      "field.password": "كلمة المرور",
+      "pw.show": "إظهار",
+      "pw.hide": "إخفاء",
+      "login.error": "أدخل بريدًا إلكترونيًا وكلمة مرور صحيحين للمتابعة.",
+      "login.remember": "تذكرني",
+      "login.forgot": "هل نسيت كلمة المرور؟",
+      "login.signin": "تسجيل الدخول",
+      "login.signingIn": "جارٍ تسجيل الدخول…",
+      "login.signedIn": "تم تسجيل الدخول",
+      "common.or": "أو",
+      "login.google": "المتابعة باستخدام Google",
+      "login.microsoft": "المتابعة باستخدام Microsoft",
+      "login.noAccount": "ليس لديك حساب؟",
+      "login.createOne": "أنشئ حسابًا",
+      "role.title": "كيف ستستخدم ElderGuardian+؟",
+      "role.sub": "اختر التجربة التي تناسب دورك.",
+      "role.familyTitle": "أنا فرد من العائلة",
+      "role.familyDesc": "أنشئ نظام رعاية لأحد أفراد عائلتك المسنين وابقَ على اطلاع دائم بحالته اليومية.",
+      "role.familyCta": "المتابعة كفرد من العائلة",
+      "role.doctorTag": "للمتخصصين في الرعاية الصحية",
+      "role.doctorTitle": "أنا طبيب",
+      "role.doctorDesc": "انضم إلى ElderGuardian+ لتقديم خدمات مراقبة صحية احترافية للمسنين والتواصل مع العائلات المحتاجة لخبرتك.",
+      "role.doctorCta": "المتابعة كطبيب",
+      "login.haveAccount": "لديك حساب بالفعل؟",
+      "login.signinLink": "تسجيل الدخول",
+      "family.title": "أنشئ حساب عائلتك",
+      "family.sub": "اربط تجربة الرعاية الخاصة بك وأدر التقنية التي تهمك أكثر.",
+      "field.fullName": "الاسم الكامل",
+      "field.emailShort": "البريد الإلكتروني",
+      "field.confirmPassword": "تأكيد كلمة المرور",
+      "field.phone": "رقم الهاتف",
+      "field.country": "الدولة",
+      "country.egypt": "مصر",
+      "country.saudi": "المملكة العربية السعودية",
+      "country.uae": "الإمارات العربية المتحدة",
+      "common.other": "أخرى",
+      "field.prefLang": "اللغة المفضلة",
+      "lang.english": "الإنجليزية",
+      "lang.arabic": "العربية",
+      "family.error": "تحقق من بياناتك — يجب أن تتطابق كلمتا المرور وأن تُملأ جميع الحقول.",
+      "family.caringFor": "من الذي ترعاه؟",
+      "common.optional": "(اختياري)",
+      "relation.parent": "أحد الوالدين",
+      "relation.grandparent": "الجد أو الجدة",
+      "relation.spouse": "الزوج/الزوجة",
+      "relation.other": "شخص عزيز آخر",
+      "terms.agree": "أوافق على",
+      "terms.tos": "شروط الخدمة",
+      "terms.and": "و",
+      "terms.privacy": "سياسة الخصوصية",
+      "terms.dot": ".",
+      "family.submit": "إنشاء حساب العائلة",
+      "family.creating": "جارٍ إنشاء الحساب…",
+      "familySuccess.title": "أهلاً بك في ElderGuardian+",
+      "familySuccess.sub": "رحلة رعايتك تبدأ من هنا.",
+      "familySuccess.cta": "إعداد نظام الرعاية الخاص بك",
+      "doctor.step0Title": "انضم إلى ElderGuardian+ كطبيب",
+      "doctor.step0Sub": "قدّم خدمات مراقبة صحية احترافية للمسنين وكن جزءًا من منظومة رعاية متكاملة.",
+      "doctor.progAccount": "الحساب",
+      "doctor.progProfile": "الملف الشخصي",
+      "doctor.progVerify": "التحقق",
+      "doctor.progSubscribe": "الاشتراك",
+      "doctor.progDone": "الانتهاء",
+      "field.profEmail": "البريد الإلكتروني المهني",
+      "doctor.step0Error": "تحقق من بياناتك — يجب أن تتطابق كلمتا المرور، وأن تُملأ جميع الحقول، ويجب الموافقة على الشروط.",
+      "common.continue": "متابعة",
+      "common.back": "رجوع",
+      "doctor.displayName": "الاسم المهني المعروض",
+      "doctor.specialty": "التخصص",
+      "doctor.specGeriatric": "طب المسنين",
+      "doctor.specInternal": "الطب الباطني",
+      "doctor.specFamily": "طب الأسرة",
+      "doctor.specGeneral": "الممارسة العامة",
+      "doctor.specNeurology": "طب الأعصاب",
+      "doctor.specCardiology": "طب القلب",
+      "doctor.experience": "سنوات الخبرة",
+      "doctor.languages": "اللغات (مفصولة بفواصل)",
+      "doctor.bioPlaceholder": "نبذة مهنية مختصرة",
+      "doctor.areas": "مجالات رعاية المسنين",
+      "doctor.availability": "أوقات التوفر للمراقبة",
+      "doctor.availToday": "متاح اليوم",
+      "doctor.availWeek": "متاح هذا الأسبوع",
+      "doctor.availFewDays": "متاح خلال أيام قليلة",
+      "doctor.commMethod": "وسيلة التواصل المفضلة",
+      "doctor.commApp": "رسائل داخل التطبيق",
+      "doctor.commVideo": "مكالمة فيديو",
+      "doctor.commPhone": "هاتف",
+      "doctor.uploadPhoto": "رفع صورة الملف الشخصي",
+      "doctor.previewLabel": "كيف ستظهر للعائلات",
+      "doctor.newProvider": "مقدّم خدمة جديد — لا توجد تقييمات بعد",
+      "doctor.priceCheckout": "السعر يظهر عند الدفع",
+      "doctor.viewProfile": "عرض الملف الشخصي",
+      "doctor.specialtyPlaceholder": "التخصص",
+      "doctor.experiencePlaceholder": "الخبرة",
+      "doctor.experienceSuffix": "+ سنة",
+      "doctor.languagesPlaceholder": "اللغات",
+      "doctor.bioPlaceholderText": "ستظهر نبذتك المهنية المختصرة هنا.",
+      "doctor.availabilityPlaceholder": "التوفر",
+      "doctor.drPrefix": "د.",
+      "doctor.drDash": "د. —",
+      "upload.selected": "تم اختيار:",
+      "doctor.verifyIntro": "يساعد التحقق المهني العائلات على معرفة أن الأطباء المدرجين في ElderGuardian+ هم متخصصون صحيون حقيقيون.",
+      "doctor.license": "رقم الترخيص / التسجيل المهني",
+      "doctor.uploadId": "رفع الهوية / المؤهل المهني",
+      "doctor.uploadDoc": "رفع مستند داعم",
+      "doctor.issuingAuthority": "جهة الإصدار",
+      "doctor.verifyStatus": "حالة التحقق: قيد الانتظار",
+      "doctor.verifyNote": "سيقوم فريق ElderGuardian+ بمراجعة معلوماتك. المستندات المرفوعة لا تُعرض للعامة.",
+      "doctor.subIntro": "يدفع الأطباء اشتراكًا شهريًا بسيطًا للحفاظ على حضورهم المهني على ElderGuardian+ وتقديم خدمات المراقبة للعائلات.",
+      "plan.professional": "احترافي",
+      "plan.professionalPlus": "احترافي بلس",
+      "plan.priceLine": "جنيه مصري / شهريًا — السعر يحدده النظام الأساسي · يُدفع شهريًا",
+      "plan.f1": "ملف طبيب عام",
+      "plan.f2": "الظهور في بحث الأطباء",
+      "plan.f3": "لوحة تحكم الطبيب",
+      "plan.f4": "إدارة المرضى تحت المراقبة",
+      "plan.f5": "تواصل آمن مع العائلات",
+      "plan.f6": "رؤى النشاط والعافية",
+      "plan.f7": "معلومات الالتزام بالأدوية",
+      "plan.f8": "التنبيهات",
+      "plan.f9": "ملخصات رعاية مدعومة بالذكاء الاصطناعي",
+      "plan.f10": "ملاحظات الطبيب",
+      "plan.p1": "كل ما في الباقة الاحترافية",
+      "plan.p2": "ظهور محسّن للملف الشخصي",
+      "plan.p3": "أدوات مراقبة موسّعة",
+      "plan.p4": "ميزات تواصل إضافية",
+      "plan.p5": "رؤى رعاية متقدمة",
+      "checkout.subscription": "اشتراك طبيب ElderGuardian+",
+      "checkout.billing": "الفوترة",
+      "checkout.monthly": "شهريًا",
+      "checkout.total": "الإجمالي",
+      "checkout.egpConfigured": "جنيه مصري — يحدده النظام الأساسي",
+      "checkout.cardholder": "اسم حامل البطاقة",
+      "checkout.cardNumber": "رقم البطاقة",
+      "checkout.expiry": "تاريخ الانتهاء",
+      "checkout.cvc": "رمز الأمان CVC",
+      "checkout.error": "تحقق من بيانات الدفع وحاول مرة أخرى.",
+      "checkout.changePlan": "تغيير الباقة",
+      "checkout.startSub": "بدء الاشتراك الاحترافي",
+      "checkout.processing": "جارٍ المعالجة…",
+      "doctor.done1": "تم إنشاء الحساب",
+      "doctor.done2": "تم إرسال الملف الشخصي المهني",
+      "doctor.done3": "التحقق قيد الانتظار",
+      "doctor.done4": "الاشتراك نشط",
+      "doctor.doneSub": "بمجرد الموافقة على ملفك المهني، سيصبح مرئيًا للعائلات الباحثة عن خدمات مراقبة المسنين.",
+      "doctor.goDashboard": "الانتقال إلى لوحة تحكم الطبيب",
+      "doctor.previewMyProfile": "معاينة ملفي الشخصي",
+      "doctor.headStep0Title": "أنشئ حسابك المهني",
+      "doctor.headStep0Sub": "",
+      "doctor.headStep1Title": "أخبر العائلات عن خبرتك",
+      "doctor.headStep1Sub": "",
+      "doctor.headStep2Title": "تحقق من هويتك المهنية",
+      "doctor.headStep2Sub": "",
+      "doctor.headStep3Title": "اختر باقة مزوّد ElderGuardian+ الخاصة بك",
+      "doctor.headStep3Sub": "يدفع الأطباء اشتراكًا شهريًا بسيطًا للحفاظ على حضورهم المهني على ElderGuardian+.",
+      "doctor.headStep4Title": "أهلاً بك في ElderGuardian+",
+      "doctor.headStep4Sub": "تم إنشاء حسابك المهني بنجاح.",
+      "privacy.title": "خصوصيتك مهمة لنا.",
+      "privacy.desc": "صُمم ElderGuardian+ لتقديم رعاية ذكية دون مراقبة بصرية مستمرة.",
+      "privacy.tag1": "بدون كاميرات",
+      "privacy.tag2": "إشارات ذات معنى",
+      "privacy.tag3": "رعاية أذكى",
+      "lang.toggleLabel": "English"
+    }
+  };
+
+  let currentLang = localStorage.getItem('eg_lang') || 'en';
+  function t(key){
+    const dict = I18N[currentLang] || I18N.en;
+    return (key in dict) ? dict[key] : (I18N.en[key] || key);
+  }
+
+  function applyStaticTranslations(){
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('lang-ar', currentLang === 'ar');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    document.title = currentLang === 'ar' ? 'ElderGuardian+ — تسجيل الدخول' : 'ElderGuardian+ — Sign In';
+    const toggleBtn = document.getElementById('langToggle');
+    if (toggleBtn) toggleBtn.textContent = t('lang.toggleLabel');
+  }
+</script>
+<script>
+  // ---------- floating labels ----------
+  document.querySelectorAll('.field input').forEach(inp => {
+    const sync = () => inp.classList.toggle('has-value', inp.value.length > 0);
+    inp.addEventListener('input', sync);
+    inp.addEventListener('blur', sync);
+    sync();
+  });
+
+  // ---------- password visibility ----------
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      const isPw = target.type === 'password';
+      target.type = isPw ? 'text' : 'password';
+      btn.textContent = isPw ? t('pw.hide') : t('pw.show');
+    });
+  });
+
+  // ---------- state switching ----------
+  const loginState = document.getElementById('loginState');
+  const roleSelectState = document.getElementById('roleSelectState');
+  const familySignupState = document.getElementById('familySignupState');
+  const familySuccessState = document.getElementById('familySuccessState');
+  const doctorState = document.getElementById('doctorState');
+  function switchTo(showEl, hideEl){
+    hideEl.classList.add('is-leaving');
+    setTimeout(() => {
+      hideEl.classList.add('is-hidden');
+      hideEl.classList.remove('is-leaving');
+      showEl.classList.remove('is-hidden');
+      showEl.classList.add('is-leaving');
+      requestAnimationFrame(() => requestAnimationFrame(() => showEl.classList.remove('is-leaving')));
+    }, 220);
+  }
+
+  // ---------- scene story text per mode ----------
+  const sceneEyebrow = document.querySelector('.scene__eyebrow');
+  const sceneHead = document.querySelector('.scene__head');
+  const sceneSub = document.querySelector('.scene__sub');
+  let sceneMode = 'default';
+  function setSceneStory(mode){
+    sceneMode = mode;
+    document.body.classList.toggle('doctor-mode', mode === 'doctor');
+    if (mode === 'doctor') {
+      sceneHead.textContent = t('scene.headDoctor');
+      sceneSub.textContent = t('scene.subDoctor');
+    } else {
+      sceneHead.textContent = t('scene.head');
+      sceneSub.textContent = t('scene.sub');
+    }
+  }
+
+  document.getElementById('toSignup').addEventListener('click', () => switchTo(roleSelectState, loginState));
+  document.getElementById('toLoginFromRole').addEventListener('click', () => switchTo(loginState, roleSelectState));
+  document.getElementById('toLoginFromFamily').addEventListener('click', () => { setSceneStory('family'); switchTo(loginState, familySignupState); });
+
+  document.getElementById('pickFamily').addEventListener('click', () => { setSceneStory('family'); switchTo(familySignupState, roleSelectState); });
+  document.getElementById('pickDoctor').addEventListener('click', () => { setSceneStory('doctor'); switchTo(doctorState, roleSelectState); });
+
+  // ---------- "who are you caring for" pills ----------
+  document.querySelectorAll('#caringForGroup .role-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#caringForGroup .role-pill').forEach(b => b.classList.remove('is-selected'));
+      btn.classList.add('is-selected');
+    });
+  });
+
+  // ---------- login validation (front-end only, no backend) ----------
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+  const loginSubmit = document.getElementById('loginSubmit');
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const pw = document.getElementById('loginPassword').value;
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && pw.length >= 6;
+    loginError.classList.toggle('is-shown', !valid);
+    if (!valid) return;
+    loginSubmit.classList.add('is-loading');
+    loginSubmit.textContent = t('login.signingIn');
+    setTimeout(() => {
+      loginSubmit.textContent = t('login.signedIn');
+      window.location.href = 'elderguardian-profile.html';
+    }, 1200);
+  });
+
+  // ---------- family signup validation ----------
+  const familyForm = document.getElementById('familyForm');
+  const familyError = document.getElementById('familyError');
+  const familySubmit = document.getElementById('familySubmit');
+  familyForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('famName').value.trim();
+    const email = document.getElementById('famEmail').value;
+    const pw = document.getElementById('famPassword').value;
+    const confirm = document.getElementById('famConfirm').value;
+    const terms = document.getElementById('famTerms').checked;
+    const valid = name.length > 1 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && pw.length >= 6 && pw === confirm && terms;
+    familyError.classList.toggle('is-shown', !valid);
+    if (!valid) return;
+    familySubmit.classList.add('is-loading');
+    familySubmit.textContent = t('family.creating');
+    setTimeout(() => {
+      familySubmit.textContent = t('family.submit');
+      familySubmit.classList.remove('is-loading');
+      switchTo(familySuccessState, familySignupState);
+    }, 1100);
+  });
+
+  // ---------- doctor onboarding: step navigation ----------
+  const doctorSteps = document.querySelectorAll('.doctor-step');
+  const doctorProgressItems = document.querySelectorAll('#doctorProgress .step-progress__item');
+  const doctorHeadingKeys = [
+    ['doctor.headStep0Title', 'doctor.headStep0Sub'],
+    ['doctor.headStep1Title', 'doctor.headStep1Sub'],
+    ['doctor.headStep2Title', 'doctor.headStep2Sub'],
+    ['doctor.headStep3Title', 'doctor.headStep3Sub'],
+    ['doctor.headStep4Title', 'doctor.headStep4Sub']
+  ];
+  let currentDoctorStep = 0;
+  function doctorGoToStep(n){
+    currentDoctorStep = n;
+    doctorSteps.forEach(s => s.classList.toggle('is-active', +s.dataset.dstep === n));
+    doctorProgressItems.forEach(p => {
+      const step = +p.dataset.step;
+      p.classList.toggle('is-active', step === n);
+      p.classList.toggle('is-done', step < n);
+    });
+    document.getElementById('doctorStepHeading').textContent = t(doctorHeadingKeys[n][0]);
+    document.getElementById('doctorStepSub').textContent = t(doctorHeadingKeys[n][1]);
+  }
+  document.querySelectorAll('[data-dback]').forEach(btn => {
+    btn.addEventListener('click', () => doctorGoToStep(+btn.dataset.dback));
+  });
+
+  document.getElementById('docStep0Next').addEventListener('click', () => {
+    const name = document.getElementById('docName').value.trim();
+    const email = document.getElementById('docEmail').value;
+    const pw = document.getElementById('docPassword').value;
+    const confirm = document.getElementById('docConfirm').value;
+    const terms = document.getElementById('docTerms').checked;
+    const valid = name.length > 1 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && pw.length >= 6 && pw === confirm && terms;
+    document.getElementById('docStep0Error').classList.toggle('is-shown', !valid);
+    if (!valid) return;
+    doctorGoToStep(1);
+  });
+
+  // ---------- live profile preview ----------
+  function updateDoctorPreview(){
+    const name = document.getElementById('docDisplayName').value.trim();
+    const specialty = document.getElementById('docSpecialty').value;
+    const experience = document.getElementById('docExperience').value;
+    const languages = document.getElementById('docLanguages').value.trim();
+    const bio = document.getElementById('docBio').value.trim();
+    const availability = document.getElementById('docAvailability').value;
+
+    document.getElementById('previewName').textContent = name ? (t('doctor.drPrefix') + ' ' + name) : t('doctor.drDash');
+    document.getElementById('previewAvatar').textContent = name ? name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'DR';
+    document.getElementById('previewSpecialty').textContent = [specialty || t('doctor.specialtyPlaceholder'), experience ? (experience + t('doctor.experienceSuffix')) : t('doctor.experiencePlaceholder')].join(' · ');
+    document.getElementById('previewLanguages').textContent = languages || t('doctor.languagesPlaceholder');
+    document.getElementById('previewBio').textContent = bio || t('doctor.bioPlaceholderText');
+    document.getElementById('previewAvailability').textContent = availability || t('doctor.availabilityPlaceholder');
+  }
+  ['docDisplayName','docSpecialty','docExperience','docLanguages','docBio','docAvailability'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateDoctorPreview);
+  });
+
+  document.getElementById('docStep1Next').addEventListener('click', () => doctorGoToStep(2));
+  document.getElementById('docStep2Next').addEventListener('click', () => doctorGoToStep(3));
+
+  // ---------- file upload display ----------
+  const selectedFileNames = {};
+  [['docPhotoUpload','docPhotoName'],['docIdUpload','docIdName'],['docDocUpload','docDocName']].forEach(([inputId, nameId]) => {
+    document.getElementById(inputId).addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      selectedFileNames[nameId] = f ? f.name : null;
+      document.getElementById(nameId).textContent = f ? (t('upload.selected') + ' ' + f.name) : '';
+    });
+  });
+
+  // ---------- doctor plan selection + checkout ----------
+  let selectedDoctorPlan = null;
+  document.querySelectorAll('.doctor-plan').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.doctor-plan').forEach(c => c.classList.remove('is-selected'));
+      card.classList.add('is-selected');
+      selectedDoctorPlan = card.dataset.plan;
+      document.getElementById('checkoutPlanName').textContent = selectedDoctorPlan === 'Professional Plus' ? t('plan.professionalPlus') : t('plan.professional');
+      document.getElementById('doctorCheckoutBlock').classList.add('is-shown');
+      document.getElementById('docStep3Back').style.display = 'none';
+    });
+  });
+  document.getElementById('changePlanBtn').addEventListener('click', () => {
+    selectedDoctorPlan = null;
+    document.querySelectorAll('.doctor-plan').forEach(c => c.classList.remove('is-selected'));
+    document.getElementById('doctorCheckoutBlock').classList.remove('is-shown');
+    document.getElementById('docStep3Back').style.display = 'inline-flex';
+  });
+
+  document.getElementById('startSubscriptionBtn').addEventListener('click', () => {
+    const name = document.getElementById('docCardName').value.trim();
+    const number = document.getElementById('docCardNumber').value.replace(/\s/g,'');
+    const expiry = document.getElementById('docCardExpiry').value.trim();
+    const cvc = document.getElementById('docCardCvc').value.trim();
+    const valid = name.length > 1 && /^\d{16}$/.test(number) && /^\d{2}\/\d{2}$/.test(expiry) && /^\d{3,4}$/.test(cvc);
+    document.getElementById('docPaymentError').classList.toggle('is-shown', !valid);
+    if (!valid) return;
+
+    const btn = document.getElementById('startSubscriptionBtn');
+    btn.textContent = t('checkout.processing');
+    setTimeout(() => {
+      btn.textContent = t('checkout.startSub');
+      doctorGoToStep(4);
+    }, 1100);
+  });
+
+  document.getElementById('previewProfileBtn').addEventListener('click', () => doctorGoToStep(1));
+
+  // ================= Language toggle wiring =================
+  function refreshDynamicText(){
+    setSceneStory(sceneMode);
+    doctorGoToStep(currentDoctorStep);
+    updateDoctorPreview();
+    document.querySelectorAll('.pw-toggle').forEach(btn => {
+      const target = document.getElementById(btn.dataset.target);
+      btn.textContent = (target && target.type === 'text') ? t('pw.hide') : t('pw.show');
+    });
+    Object.keys(selectedFileNames).forEach(nameId => {
+      const name = selectedFileNames[nameId];
+      document.getElementById(nameId).textContent = name ? (t('upload.selected') + ' ' + name) : '';
+    });
+    if (selectedDoctorPlan) {
+      document.getElementById('checkoutPlanName').textContent = selectedDoctorPlan === 'Professional Plus' ? t('plan.professionalPlus') : t('plan.professional');
+    }
+    if (!loginSubmit.classList.contains('is-loading')) loginSubmit.textContent = t('login.signin');
+    if (!familySubmit.classList.contains('is-loading')) familySubmit.textContent = t('family.submit');
+  }
+
+  function setLanguage(lang){
+    currentLang = lang;
+    localStorage.setItem('eg_lang', lang);
+    applyStaticTranslations();
+    refreshDynamicText();
+  }
+
+  document.getElementById('langToggle').addEventListener('click', () => {
+    setLanguage(currentLang === 'ar' ? 'en' : 'ar');
+  });
+
+  applyStaticTranslations();
+  refreshDynamicText();
+</script>
+
+</body>
+</html>

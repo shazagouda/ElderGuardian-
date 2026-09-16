@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Doctor Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-light:#F5F3EE; --panel:#EDEAE0; --studio-1:#F3F1EA; --studio-2:#DFDCD1;
+    --ink:#1E211D; --ink-soft:#4B4E48; --teal:#4F8079; --teal-deep:#3E6560;
+    --sand:#D8C9A9; --sand-dark:#B79E77; --rule-light:rgba(30,33,29,0.14);
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  button{font-family:inherit; cursor:pointer;}
+  input, select, textarea{font-family:inherit;}
+  a{color:inherit;}
+
+  .app{display:block; min-height:100vh;}
+  .sidebar{background:var(--panel); border-right:1px solid var(--rule-light); display:flex; flex-direction:column; padding:1.6rem 1.2rem; position:sticky; top:0; height:100vh;}
+  .sidebar__logo{font-family:'Libre Caslon Display',serif; font-size:1.05rem; margin:0 0 2rem; padding-left:0.4rem;}
+  .sidebar__nav{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.1rem; flex:1; overflow-y:auto;}
+  .sidebar__nav a{display:block; padding:0.55rem 0.6rem; font-size:0.88rem; color:var(--ink-soft); text-decoration:none; border-left:2px solid transparent; border-radius:2px;}
+  .sidebar__nav a:hover{color:var(--ink);}
+  .sidebar__nav a.is-active{color:var(--ink); border-left-color:var(--teal); background:rgba(79,128,121,0.08); font-weight:600;}
+  .sidebar__bottom{list-style:none; margin:0; padding-top:0.8rem; border-top:1px solid var(--rule-light); display:flex; flex-direction:column; gap:0.1rem;}
+  .sidebar__bottom a{display:block; padding:0.5rem 0.6rem; font-size:0.85rem; color:var(--ink-soft); text-decoration:none;}
+
+
+  .avatar{width:34px; height:34px; border-radius:50%; background:var(--teal); color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:600; flex-shrink:0;}
+
+  .content{padding:0 0 4rem;}
+  .wrap{max-width:1200px; margin:0 auto; padding:0 2rem;}
+  section{padding:3.5rem 0;}
+  .rule-top{border-top:1px solid var(--rule-light);}
+  .eyebrow{font-size:0.85rem; color:var(--teal); font-weight:600; letter-spacing:0.02em; margin:0 0 1rem;}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:0.5rem; font-size:0.9rem; font-weight:600; padding:0.75rem 1.4rem; border-radius:5px; border:1px solid transparent; transition:background .2s ease, border-color .2s ease, transform .15s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn-outline{background:transparent; color:var(--ink); border-color:var(--rule-light);}
+  .btn-outline:hover{border-color:var(--ink);}
+  .btn-text{background:none; border:none; color:var(--ink-soft); text-decoration:underline; padding:0; font-size:0.88rem;}
+  .btn[disabled]{opacity:0.6; pointer-events:none;}
+  .btn-sm{padding:0.5rem 0.9rem; font-size:0.82rem;}
+
+  /* ---------- Hero ---------- */
+  .hero{background:radial-gradient(ellipse at 68% 45%, var(--studio-1) 0%, var(--studio-2) 100%); padding:3rem 0 2.5rem;}
+  .hero__grid{display:grid; grid-template-columns:1fr 1fr; gap:2.5rem; align-items:center;}
+  .hero__head{font-size:clamp(2rem,3.4vw,2.9rem); line-height:1.14; margin:0 0 1.2rem; max-width:12ch;}
+  .hero__sub{font-size:1.02rem; color:var(--ink-soft); line-height:1.65; max-width:42ch; margin:0 0 1.6rem;}
+  .hero__flow{font-size:0.85rem; color:var(--ink-soft); margin-bottom:1.8rem;}
+  .hero__flow b{color:var(--ink);}
+  .hero__actions{display:flex; gap:1rem; flex-wrap:wrap;}
+  .hero3d{width:100%; height:320px; position:relative; border-radius:8px; overflow:hidden; display:flex; align-items:center; justify-content:center;}
+  .hero3d .robot-hero-svg{width:auto; height:100%; max-width:100%; display:block;}
+  .robot-light{animation:pulse 3.4s ease-in-out infinite; transform-origin:center;}
+  @keyframes pulse{0%,100%{opacity:0.6;} 50%{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .robot-light{animation:none !important;} }
+
+  /* ---------- Discovery ---------- */
+  h2.section-head{font-size:clamp(1.5rem,2.4vw,1.9rem); margin:0 0 0.5rem;}
+  .section-sub{font-size:0.95rem; color:var(--ink-soft); margin:0 0 1.8rem; max-width:56ch;}
+  .discovery-bar{display:flex; gap:0.8rem; flex-wrap:wrap; align-items:center; margin-bottom:1.6rem;}
+  .search-input{flex:1; min-width:220px; padding:0.7rem 1rem; border:1px solid var(--rule-light); border-radius:5px; font-size:0.92rem;}
+  .filter-select{padding:0.6rem 0.8rem; border:1px solid var(--rule-light); border-radius:5px; font-size:0.85rem; background:#fff; color:var(--ink);}
+  .results-count{font-size:0.85rem; color:var(--ink-soft); margin-bottom:1.2rem;}
+
+  /* ---------- Doctor cards ---------- */
+  .doctor-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1.4rem;}
+  .doctor-card{border:1px solid var(--rule-light); border-radius:8px; padding:1.4rem; display:flex; gap:1rem; background:#fff;}
+  .doc-avatar{width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:600; font-size:1.1rem; flex-shrink:0;}
+  .doc-name{font-size:1.05rem; font-weight:600; margin:0 0 0.15rem; display:flex; align-items:center; gap:0.4rem;}
+  .verified-badge{font-size:0.68rem; color:var(--teal); border:1px solid var(--teal); border-radius:3px; padding:0.05rem 0.35rem; font-weight:600;}
+  .doc-specialty{font-size:0.86rem; color:var(--ink-soft); margin:0 0 0.3rem;}
+  .doc-meta{font-size:0.8rem; color:var(--ink-soft); display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;}
+  .doc-meta span:not(:last-child)::after{content:"·"; margin-left:0.5rem; color:var(--rule-light);}
+  .doc-bio{font-size:0.85rem; color:var(--ink-soft); line-height:1.5; margin:0 0 0.7rem;}
+  .doc-price{font-size:0.85rem; color:var(--ink); margin-bottom:0.7rem;}
+  .doc-actions{display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;}
+  .compare-check{display:flex; align-items:center; gap:0.35rem; font-size:0.78rem; color:var(--ink-soft);}
+  .compare-check input{accent-color:var(--teal);}
+  .no-results{font-size:0.9rem; color:var(--ink-soft); padding:2rem 0; text-align:center;}
+
+  /* ---------- Compare tray ---------- */
+  .compare-tray{position:fixed; left:236px; right:16px; bottom:16px; background:var(--ink); color:#fff; border-radius:8px; padding:0.9rem 1.4rem; display:none; align-items:center; justify-content:space-between; gap:1rem; z-index:40; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
+  .compare-tray.is-shown{display:flex;}
+  .compare-tray__names{font-size:0.88rem; color:#D8D6CF;}
+
+  /* ---------- Modal / panel ---------- */
+  .modal-overlay{position:fixed; inset:0; background:rgba(30,33,29,0.45); display:none; align-items:center; justify-content:center; z-index:100; padding:1.5rem;}
+  .modal-overlay.is-open{display:flex;}
+  .modal{background:#fff; border-radius:8px; padding:2rem; width:100%; max-width:520px; max-height:88vh; overflow-y:auto;}
+  .modal--wide{max-width:800px;}
+  .modal h3{margin:0 0 0.3rem; font-size:1.3rem;}
+  .modal-close{position:absolute; top:1.2rem; right:1.4rem; background:none; border:none; font-size:1.1rem; color:var(--ink-soft); cursor:pointer;}
+  .modal-inner{position:relative;}
+
+  /* ---------- Elder / selected doctor ---------- */
+  .selected-doctor{display:none;}
+  .selected-doctor.is-shown{display:block;}
+  .selected-flow{font-size:0.85rem; color:var(--ink-soft); margin-bottom:1.6rem;}
+  .selected-flow b{color:var(--ink);}
+  .elder-row{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem; border:1px solid var(--rule-light); border-radius:8px; padding:1.2rem 1.4rem;}
+  .elder-row__meta{font-size:0.85rem; color:var(--ink-soft); display:flex; gap:0.5rem; flex-wrap:wrap;}
+  .elder-row__meta span:not(:last-child)::after{content:"·"; margin-left:0.5rem; color:var(--rule-light);}
+
+  /* ---------- Plans ---------- */
+  .plans-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem;}
+  .plan-card{border:1px solid var(--rule-light); border-radius:8px; padding:1.6rem; position:relative; cursor:pointer; transition:border-color .2s ease;}
+  .plan-card.is-selected{border-color:var(--teal); box-shadow:0 0 0 1px var(--teal);}
+  .plan-card__badge{position:absolute; top:-11px; left:1.4rem; background:var(--teal); color:#fff; font-size:0.72rem; padding:0.2rem 0.6rem; border-radius:3px;}
+  .plan-card h4{font-size:1.1rem; margin:0 0 0.4rem;}
+  .plan-card__price{font-size:0.92rem; color:var(--ink-soft); margin-bottom:1rem;}
+  .plan-card ul{list-style:none; margin:0 0 1.2rem; padding:0; display:flex; flex-direction:column; gap:0.45rem; font-size:0.85rem; color:var(--ink-soft);}
+  .plan-card ul li::before{content:"– ";}
+
+  /* ---------- Room signals ---------- */
+  .room-tabs{display:flex; gap:0.6rem; margin-bottom:1.2rem; flex-wrap:wrap;}
+  .room-tabs button{font-size:0.85rem; padding:0.5rem 1rem; border-radius:5px; border:1px solid var(--rule-light); background:#fff; color:var(--ink-soft);}
+  .room-tabs button.is-active{border-color:var(--ink); color:var(--ink); font-weight:600;}
+  .room-signal-box{border:1px solid var(--rule-light); border-radius:8px; padding:1.4rem; font-size:0.92rem; color:var(--ink-soft); line-height:1.7;}
+
+  /* ---------- Flow ---------- */
+  .flow-section{background:var(--bg-light); color:var(--ink);}
+  .flow-section h2{color:var(--ink);}
+  .flow-row{display:flex; align-items:center; flex-wrap:wrap; gap:0; border-top:1px solid var(--rule-light); border-bottom:1px solid var(--rule-light); padding:1.4rem 0;}
+  .flow-row__node{font-size:0.9rem; padding:0 1.3rem; position:relative; color:var(--ink-soft);}
+  .flow-row__node:not(:last-child)::after{content:"→"; position:absolute; right:-1.05rem; color:var(--sand-dark);}
+  .flow-note{font-size:0.85rem; color:var(--ink-soft); margin-top:1rem;}
+
+  /* ---------- Insight preview ---------- */
+  .insight-card{border:1px dashed var(--rule-light); border-radius:8px; padding:1.6rem;}
+  .insight-row{display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .insight-row:last-of-type{border-bottom:none;}
+  .insight-note{font-size:0.88rem; color:var(--ink-soft); margin-top:1rem; line-height:1.6; border-top:1px solid var(--rule-light); padding-top:1rem;}
+
+  /* ---------- Chat preview ---------- */
+  .chat-box{border:1px solid var(--rule-light); border-radius:8px; padding:1.4rem; display:flex; flex-direction:column; gap:0.7rem; max-width:600px;}
+  .chat-bubble{max-width:75%; padding:0.6rem 0.9rem; border-radius:8px; font-size:0.88rem; line-height:1.5;}
+  .chat-bubble.them{background:var(--panel); align-self:flex-start;}
+  .chat-bubble.me{background:rgba(79,128,121,0.15); align-self:flex-end;}
+
+  /* ---------- Checkout ---------- */
+  .checkout-steps{display:flex; gap:1.6rem; margin-bottom:1.8rem;}
+  .checkout-step{font-size:0.82rem; color:var(--ink-soft); display:flex; align-items:center; gap:0.4rem;}
+  .checkout-step__num{width:20px; height:20px; border-radius:50%; border:1px solid var(--rule-light); display:flex; align-items:center; justify-content:center; font-size:0.72rem;}
+  .checkout-step.is-active{color:var(--ink); font-weight:600;}
+  .checkout-step.is-active .checkout-step__num{border-color:var(--teal); color:var(--teal);}
+  .checkout-step.is-done .checkout-step__num{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .checkout-panel{display:none;}
+  .checkout-panel.is-active{display:block;}
+  .summary-row{display:flex; justify-content:space-between; padding:0.55rem 0; border-bottom:1px solid var(--rule-light); font-size:0.9rem;}
+  .summary-row.total{font-weight:600; font-size:1rem; border-bottom:none; padding-top:0.9rem;}
+  .pay-field{margin-bottom:0.9rem;}
+  .pay-field label{display:block; font-size:0.8rem; color:var(--ink-soft); margin-bottom:0.3rem;}
+  .pay-field input{width:100%; padding:0.6rem 0.75rem; border:1px solid var(--rule-light); border-radius:5px; font-size:0.9rem;}
+  .pay-field.has-error input{border-color:#9C5A3C;}
+  .pay-field .err{font-size:0.76rem; color:#9C5A3C; display:none; margin-top:0.25rem;}
+  .pay-field.has-error .err{display:block;}
+  .pay-row{display:grid; grid-template-columns:1fr 1fr; gap:1rem;}
+  .confirm-box{text-align:center; padding:1rem 0;}
+  .confirm-canvas{width:180px; height:180px; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center;}
+  .confirm-canvas .robot-hero-svg{width:auto; height:100%; max-width:100%; display:block;}
+
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{display:none;}
+    .hero__grid, .doctor-grid, .plans-grid{grid-template-columns:1fr;}
+    .compare-tray{left:16px;}
+    .pay-row{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="main">
+
+    <div class="content">
+      <!-- ================= HERO ================= -->
+      <header class="hero">
+        <div class="wrap hero__grid">
+          <div>
+            <p class="eyebrow">DOCTOR MONITORING</p>
+            <h1 class="hero__head display">Care that goes beyond the home.</h1>
+            <p class="hero__sub">Choose a trusted doctor to follow your loved one's wellbeing, review meaningful changes, and stay connected when attention is needed.</p>
+            <p class="hero__flow"><b>Home</b> → Intelligent monitoring → <b>Doctor</b> → <b>Family</b></p>
+            <div class="hero__actions">
+              <a class="btn btn-primary" href="#discovery">Find a Doctor</a>
+              <a class="btn btn-outline" href="#workflow">How Doctor Monitoring Works</a>
+            </div>
+          </div>
+          <div class="hero3d">
+            <svg class="robot-hero-svg" viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ companion robot: a low, rounded, silver device with a spherical head, a dark visor and a soft teal light band, the same design used throughout the site.">
+              <defs>
+                <radialGradient id="robotHeadGrad" cx="35%" cy="28%" r="80%">
+                  <stop offset="0%" stop-color="#FFFFFF"/>
+                  <stop offset="55%" stop-color="#F0EEE7"/>
+                  <stop offset="100%" stop-color="#C7C4B9"/>
+                </radialGradient>
+                <linearGradient id="robotDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1">
+                  <stop offset="0%" stop-color="#FFFFFF"/>
+                  <stop offset="55%" stop-color="#E9E7DE"/>
+                  <stop offset="100%" stop-color="#C2BFB3"/>
+                </linearGradient>
+                <linearGradient id="robotBaseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#E7E5DC"/>
+                  <stop offset="100%" stop-color="#B3B0A4"/>
+                </linearGradient>
+                <linearGradient id="robotFootGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#9C9884"/>
+                  <stop offset="100%" stop-color="#6C6952"/>
+                </linearGradient>
+                <linearGradient id="robotVisorGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2E312B"/>
+                  <stop offset="100%" stop-color="#101210"/>
+                </linearGradient>
+                <linearGradient id="robotLightGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#3D6961"/>
+                  <stop offset="50%" stop-color="#6FAA9F"/>
+                  <stop offset="100%" stop-color="#3D6961"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+              <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+              <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+              <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+              <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+              <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+              <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+              <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+              <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+              <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+              <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+              <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)" class="robot-light"/>
+              <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- ================= DISCOVERY ================= -->
+      <section id="discovery">
+        <div class="wrap">
+          <h2 class="section-head display">Find the right doctor for your loved one</h2>
+          <p class="section-sub">Browse available doctors and choose the professional whose experience and care approach fit your family's needs.</p>
+
+          <div class="discovery-bar">
+            <input type="text" class="search-input" id="doctorSearch" placeholder="Search doctors by name or specialty">
+            <select class="filter-select" id="filterSpecialty">
+              <option value="">All specialties</option>
+              <option value="Geriatric Medicine">Geriatric Medicine</option><option value="Internal Medicine">Internal Medicine</option><option value="Family Medicine">Family Medicine</option><option value="Geriatric Care">Geriatric Care</option>
+            </select>
+            <select class="filter-select" id="filterLanguage">
+              <option value="">Any language</option>
+              <option value="Arabic">Arabic</option><option value="English">English</option><option value="French">French</option>
+            </select>
+            <select class="filter-select" id="filterAvailability">
+              <option value="">Any availability</option>
+              <option value="Available today">Available today</option><option value="Available this week">Available this week</option>
+            </select>
+            <select class="filter-select" id="sortDoctors">
+              <option value="recommended">Recommended</option>
+              <option value="rating">Highest rated</option>
+              <option value="experience">Most experienced</option>
+            </select>
+          </div>
+          <p class="results-count" id="resultsCount"></p>
+          <div class="doctor-grid" id="doctorGrid"></div>
+        </div>
+      </section>
+
+      <!-- ================= SELECTED DOCTOR ================= -->
+      <section class="rule-top selected-doctor" id="selectedDoctorSection">
+        <div class="wrap">
+          <h2 class="section-head display">You selected <span id="selectedDoctorName">Dr.</span></h2>
+          <p class="selected-flow">Who will the doctor monitor?</p>
+          <div class="elder-row">
+            <div style="display:flex; align-items:center; gap:1rem;">
+              <div class="avatar" style="background:var(--sand-dark); width:48px; height:48px;">AH</div>
+              <div>
+                <div style="font-weight:600;">Ahmed Hassan</div>
+                <div class="elder-row__meta"><span>Age 72</span><span>Father</span><span>ElderGuardian+ system active</span></div>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm">View Elder Profile</button>
+          </div>
+          <p class="selected-flow" style="margin-top:1.2rem;">Family Member → Doctor → ElderGuardian+ → Ahmed's Home</p>
+        </div>
+      </section>
+
+      <!-- ================= PLANS ================= -->
+      <section class="rule-top">
+        <div class="wrap">
+          <h2 class="section-head display">Choose your monitoring plan</h2>
+          <p class="section-sub">Pricing is configured by the platform and shown at checkout.</p>
+          <div class="plans-grid" id="plansGrid">
+            <div class="plan-card" data-plan="essential">
+              <h4>Essential</h4>
+              <p class="plan-card__price">Price shown at checkout</p>
+              <ul><li>Professional review of meaningful activity insights</li><li>Monthly summary</li></ul>
+              <button class="btn btn-outline btn-sm select-plan-btn">Select Plan</button>
+            </div>
+            <div class="plan-card" data-plan="plus">
+              <span class="plan-card__badge">Recommended</span>
+              <h4>Plus</h4>
+              <p class="plan-card__price">Price shown at checkout</p>
+              <ul><li>Everything in Essential</li><li>More frequent monitoring</li><li>Alert review &amp; family communication</li></ul>
+              <button class="btn btn-outline btn-sm select-plan-btn">Select Plan</button>
+            </div>
+            <div class="plan-card" data-plan="comprehensive">
+              <h4>Comprehensive</h4>
+              <p class="plan-card__price">Price shown at checkout</p>
+              <ul><li>Everything in Plus</li><li>Expanded monitoring &amp; reports</li><li>Direct doctor communication</li><li>Additional support</li></ul>
+              <button class="btn btn-outline btn-sm select-plan-btn">Select Plan</button>
+            </div>
+          </div>
+          <div style="margin-top:1.6rem;">
+            <button class="btn btn-primary" id="subscribeBtn" disabled>Subscribe</button>
+            <span id="subscribeHint" style="font-size:0.82rem; color:var(--ink-soft); margin-left:0.8rem;">Select a doctor and a plan to continue.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= WHAT THE DOCTOR MONITORS ================= -->
+      <section class="rule-top">
+        <div class="wrap">
+          <h2 class="section-head display">Meaningful information. Not constant surveillance.</h2>
+          <p class="section-sub">Choose a room to see the kind of signals a doctor actually reviews — never raw footage, never a live feed.</p>
+          <div class="room-tabs" id="roomTabs">
+            <button class="is-active" data-room="bedroom">Bedroom</button>
+            <button data-room="living">Living Room</button>
+            <button data-room="kitchen">Kitchen</button>
+            <button data-room="entrance">Entrance</button>
+          </div>
+          <div class="room-signal-box" id="roomSignalBox">Sleep and activity patterns, and bed occupancy patterns — enough to notice a change in rest, never a video of the room.</div>
+        </div>
+      </section>
+
+      <!-- ================= AI + DOCTOR WORKFLOW ================= -->
+      <section class="flow-section" id="workflow">
+        <div class="wrap">
+          <h2 class="section-head display">AI notices the change. A doctor understands the context.</h2>
+          <div class="flow-row">
+            <span class="flow-row__node">Sensors + Robot</span>
+            <span class="flow-row__node">ElderGuardian+ Platform</span>
+            <span class="flow-row__node">AI Activity Analysis</span>
+            <span class="flow-row__node">Meaningful Insight</span>
+            <span class="flow-row__node">Doctor Review</span>
+            <span class="flow-row__node">Family Communication</span>
+          </div>
+          <p class="flow-note">AI assists the doctor — it does not replace clinical judgment, and ElderGuardian+ does not diagnose medical conditions automatically.</p>
+        </div>
+      </section>
+
+      <!-- ================= DOCTOR INSIGHT PREVIEW ================= -->
+      <section class="rule-top">
+        <div class="wrap">
+          <h2 class="section-head display">What a doctor review looks like</h2>
+          <div class="insight-card">
+            <p style="font-weight:600; margin:0 0 0.8rem;">Today's Care Summary — Ahmed Hassan</p>
+            <div class="insight-row"><span>Activity</span><span>Normal</span></div>
+            <div class="insight-row"><span>Sleep Pattern</span><span>Consistent</span></div>
+            <div class="insight-row"><span>Medication Confirmation</span><span>Up to date</span></div>
+            <div class="insight-row"><span>Recent Alerts</span><span>1 attention item</span></div>
+            <p class="insight-note"><b>AI Observation:</b> "Morning activity started later than usual compared with Ahmed's recent routine."<br><br><span style="display:inline-flex; align-items:center; gap:0.5rem; margin-top:0.4rem;"><span class="avatar" style="width:22px; height:22px; font-size:0.65rem; background:var(--sand-dark);">DR</span>Doctor Review — sample data for illustration only.</span></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= COMMUNICATION ================= -->
+      <section class="rule-top">
+        <div class="wrap">
+          <h2 class="section-head display">Stay connected with the person watching over their care.</h2>
+          <p class="section-sub">Secure messages, care updates, doctor notes, follow-up requests, important alerts, and scheduled consultations.</p>
+          <div class="chat-box">
+            <div class="chat-bubble them">Ahmed's morning activity was a little later than usual today — nothing concerning, just noting it.</div>
+            <div class="chat-bubble me">Thank you for letting us know, we appreciate it.</div>
+            <div class="chat-bubble them">Of course. I'll follow up again at our next scheduled review.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DOCTOR PROFILE MODAL ================= -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal modal--wide modal-inner" id="profileModalBody"></div>
+</div>
+
+<!-- ================= COMPARE MODAL ================= -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal modal--wide modal-inner">
+    <button class="modal-close" data-close="compareModal">✕</button>
+    <h3 class="display">Compare doctors</h3>
+    <p style="font-size:0.9rem; color:var(--ink-soft); margin-bottom:1.4rem;">Up to three doctors, side by side.</p>
+    <div id="compareTableWrap"></div>
+  </div>
+</div>
+
+<!-- ================= CHECKOUT MODAL ================= -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal modal--wide modal-inner">
+    <button class="modal-close" data-close="checkoutModal">✕</button>
+    <div class="checkout-steps" id="checkoutSteps">
+      <div class="checkout-step is-active" data-step="0"><span class="checkout-step__num">1</span>Doctor</div>
+      <div class="checkout-step" data-step="1"><span class="checkout-step__num">2</span>Plan</div>
+      <div class="checkout-step" data-step="2"><span class="checkout-step__num">3</span>Payment</div>
+      <div class="checkout-step" data-step="3"><span class="checkout-step__num">4</span>Confirmation</div>
+    </div>
+
+    <div class="checkout-panel is-active" data-panel="0">
+      <h3 class="display">Your selected doctor</h3>
+      <div id="checkoutDoctorSummary" style="margin:1rem 0 1.6rem;"></div>
+      <button class="btn btn-primary" data-next="1">Continue</button>
+    </div>
+
+    <div class="checkout-panel" data-panel="1">
+      <h3 class="display">Your selected plan</h3>
+      <div id="checkoutPlanSummary" style="margin:1rem 0 1.6rem;"></div>
+      <button class="btn btn-outline" data-prev="0">Back</button>
+      <button class="btn btn-primary" data-next="2">Continue</button>
+    </div>
+
+    <div class="checkout-panel" data-panel="2">
+      <h3 class="display">Payment</h3>
+      <div class="summary-row"><span>Doctor Monitoring</span><span id="paySummaryDoctor">—</span></div>
+      <div class="summary-row"><span>Selected Plan</span><span id="paySummaryPlan">—</span></div>
+      <div class="summary-row"><span>Billing Period</span><span>Monthly</span></div>
+      <div class="summary-row"><span>Subtotal</span><span>Calculated at checkout</span></div>
+      <div class="summary-row total"><span>Total</span><span>Price shown at checkout</span></div>
+      <div style="margin-top:1.4rem;">
+        <div class="pay-field" id="pf-name"><label>Cardholder Name</label><input type="text" placeholder="Full name on card"><span class="err">Enter the cardholder's name.</span></div>
+        <div class="pay-field" id="pf-number"><label>Card Number</label><input type="text" placeholder="1234 1234 1234 1234" maxlength="19"><span class="err">Enter a valid 16-digit card number.</span></div>
+        <div class="pay-row">
+          <div class="pay-field" id="pf-expiry"><label>Expiry</label><input type="text" placeholder="MM/YY" maxlength="5"><span class="err">Enter a valid expiry date.</span></div>
+          <div class="pay-field" id="pf-cvc"><label>CVC</label><input type="text" placeholder="123" maxlength="4"><span class="err">Enter a valid CVC.</span></div>
+        </div>
+        <div class="pay-field" id="pf-billing"><label>Billing Address</label><input type="text" placeholder="Street, City, Country"><span class="err">Enter a billing address.</span></div>
+      </div>
+      <button class="btn btn-outline" data-prev="1">Back</button>
+      <button class="btn btn-primary" id="payBtn">Pay &amp; Subscribe</button>
+    </div>
+
+    <div class="checkout-panel" data-panel="3">
+      <div class="confirm-box">
+        <div class="confirm-canvas">
+          <svg class="robot-hero-svg" viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ companion robot.">
+            <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+            <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+            <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+            <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+            <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+            <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+            <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+            <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+            <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+            <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+            <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+            <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)" class="robot-light"/>
+            <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+          </svg>
+        </div>
+        <h3 class="display">Doctor monitoring is now active.</h3>
+        <p style="font-size:0.92rem; color:var(--ink-soft); margin:0 0 1.4rem;" id="confirmText"></p>
+        <div style="text-align:left; max-width:320px; margin:0 auto 1.6rem;">
+          <div class="summary-row"><span>Doctor</span><span id="confirmDoctor">—</span></div>
+          <div class="summary-row"><span>Plan</span><span id="confirmPlan">—</span></div>
+          <div class="summary-row"><span>Next review</span><span>Within 3 days</span></div>
+          <div class="summary-row"><span>Subscription status</span><span style="color:var(--teal);">Active</span></div>
+        </div>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+          <button class="btn btn-primary" data-close="checkoutModal">Go to Doctor Monitoring</button>
+          <button class="btn btn-outline" data-close="checkoutModal">View Subscription</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // ================= Mock data =================
+  let currentLang = 'en';
+  const dict = {
+    "ElderGuardian+ — Doctor Monitoring": "إلدر جارديان+ — متابعة الدكتور",
+    "ElderGuardian+": "إلدر جارديان+",
+    "Doctor Monitoring": "متابعة الدكتور",
+    "Ahmed Hassan ▾": "أحمد حسن ▾",
+    "Connected": "متصل",
+    "DOCTOR MONITORING": "متابعة الدكتور",
+    "Care that goes beyond the home.": "رعاية بتتخطى حدود البيت.",
+    "Choose a trusted doctor to follow your loved one's wellbeing, review meaningful changes, and stay connected when attention is needed.": "اختار دكتور موثوق يتابع صحة حبيبك، ويراجع التغيرات المهمة، ويفضل متصل لما يحتاج انتباه.",
+    "Home": "البيت",
+    "→ Intelligent monitoring →": "← متابعة ذكية ←",
+    "Doctor": "الدكتور",
+    "Family": "العائلة",
+    "Find a Doctor": "دوّر على دكتور",
+    "How Doctor Monitoring Works": "إزاي متابعة الدكتور بتشتغل",
+    "Find the right doctor for your loved one": "دوّر على الدكتور المناسب لحبيبك",
+    "Browse available doctors and choose the professional whose experience and care approach fit your family's needs.": "تصفح الدكاترة المتاحين واختار المتخصص اللي خبرته وأسلوبه في الرعاية يناسب احتياجات عائلتك.",
+    "All specialties": "كل التخصصات",
+    "Geriatric Medicine": "طب الشيخوخة",
+    "Internal Medicine": "الباطنة",
+    "Family Medicine": "طب الأسرة",
+    "Geriatric Care": "رعاية كبار السن",
+    "Any language": "أي لغة",
+    "Arabic": "العربية",
+    "English": "الإنجليزية",
+    "French": "الفرنسية",
+    "Any availability": "أي وقت متاح",
+    "Available today": "متاح النهاردة",
+    "Available this week": "متاح الأسبوع ده",
+    "Recommended": "الأكثر ترشيحًا",
+    "Highest rated": "الأعلى تقييمًا",
+    "Most experienced": "الأكثر خبرة",
+    "You selected": "اخترت",
+    "Dr.": "د.",
+    "Who will the doctor monitor?": "الدكتور هيتابع مين؟",
+    "Ahmed Hassan": "أحمد حسن",
+    "Age 72": "العمر 72",
+    "Father": "الأب",
+    "ElderGuardian+ system active": "نظام إلدر جارديان+ شغال",
+    "View Elder Profile": "شوف بروفايل كبير السن",
+    "Family Member → Doctor → ElderGuardian+ → Ahmed's Home": "فرد من العائلة ← الدكتور ← إلدر جارديان+ ← بيت أحمد",
+    "Choose your monitoring plan": "اختار خطة المتابعة",
+    "Pricing is configured by the platform and shown at checkout.": "الأسعار بتتحدد من المنصة وبتظهر وقت الدفع.",
+    "Essential": "أساسية",
+    "Price shown at checkout": "السعر بيظهر وقت الدفع",
+    "Professional review of meaningful activity insights": "مراجعة احترافية لأهم ملاحظات النشاط",
+    "Monthly summary": "ملخص شهري",
+    "Select Plan": "اختار الخطة",
+    "Plus": "بلس",
+    "Everything in Essential": "كل حاجة في الخطة الأساسية",
+    "More frequent monitoring": "متابعة أكتر تكرارًا",
+    "Alert review & family communication": "مراجعة التنبيهات والتواصل مع العائلة",
+    "Comprehensive": "شاملة",
+    "Everything in Plus": "كل حاجة في خطة بلس",
+    "Expanded monitoring & reports": "متابعة موسعة وتقارير",
+    "Direct doctor communication": "تواصل مباشر مع الدكتور",
+    "Additional support": "دعم إضافي",
+    "Subscribe": "اشترك",
+    "Select a doctor and a plan to continue.": "اختار دكتور وخطة عشان تكمل.",
+    "Meaningful information. Not constant surveillance.": "معلومات ذات معنى. مش مراقبة مستمرة.",
+    "Choose a room to see the kind of signals a doctor actually reviews — never raw footage, never a live feed.": "اختار أوضة عشان تشوف نوع الإشارات اللي الدكتور فعلاً بيراجعها — من غير أي لقطات خام أو بث مباشر.",
+    "Bedroom": "أوضة النوم",
+    "Living Room": "الصالة",
+    "Kitchen": "المطبخ",
+    "Entrance": "المدخل",
+    "Sleep and activity patterns, and bed occupancy patterns — enough to notice a change in rest, never a video of the room.": "أنماط النوم والنشاط، وأنماط إشغال السرير — كفاية عشان يلاحظ تغيّر في الراحة، من غير أي فيديو للأوضة.",
+    "AI notices the change. A doctor understands the context.": "الذكاء الاصطناعي بيلاحظ التغيير. والدكتور بيفهم السياق.",
+    "Sensors + Robot": "الحساسات + الروبوت",
+    "ElderGuardian+ Platform": "منصة إلدر جارديان+",
+    "AI Activity Analysis": "تحليل النشاط بالذكاء الاصطناعي",
+    "Meaningful Insight": "ملاحظة ذات معنى",
+    "Doctor Review": "مراجعة الدكتور",
+    "Family Communication": "التواصل مع العائلة",
+    "AI assists the doctor — it does not replace clinical judgment, and ElderGuardian+ does not diagnose medical conditions automatically.": "الذكاء الاصطناعي بيساعد الدكتور — مش بديل عن قراره الطبي، وإلدر جارديان+ مايشخصش حالات طبية تلقائيًا.",
+    "What a doctor review looks like": "شكل مراجعة الدكتور",
+    "Today's Care Summary — Ahmed Hassan": "ملخص رعاية اليوم — أحمد حسن",
+    "Activity": "النشاط",
+    "Normal": "طبيعي",
+    "Sleep Pattern": "نمط النوم",
+    "Consistent": "ثابت",
+    "Medication Confirmation": "تأكيد الدواء",
+    "Up to date": "محدّث",
+    "Recent Alerts": "تنبيهات حديثة",
+    "1 attention item": "عنصر واحد يحتاج انتباه",
+    "AI Observation:": "ملاحظة الذكاء الاصطناعي:",
+    "\"Morning activity started later than usual compared with Ahmed's recent routine.\"": "\"النشاط الصباحي بدأ متأخر عن المعتاد مقارنة بروتين أحمد الأخير.\"",
+    "Doctor Review — sample data for illustration only.": "مراجعة الدكتور — بيانات تجريبية للتوضيح بس.",
+    "Stay connected with the person watching over their care.": "افضل متواصل مع اللي بيتابع رعايتهم.",
+    "Secure messages, care updates, doctor notes, follow-up requests, important alerts, and scheduled consultations.": "رسائل آمنة، تحديثات رعاية، ملاحظات الدكتور، طلبات متابعة، تنبيهات مهمة، واستشارات مجدولة.",
+    "Ahmed's morning activity was a little later than usual today — nothing concerning, just noting it.": "نشاط أحمد الصباحي كان متأخر شوية عن المعتاد النهاردة — مفيش أي قلق، بس حبيت أنوّه.",
+    "Thank you for letting us know, we appreciate it.": "شكرًا إنك أخبرتنا، بنقدّر ده.",
+    "Of course. I'll follow up again at our next scheduled review.": "أكيد. هتابع تاني في المراجعة المجدولة الجاية.",
+    "Compare doctors": "قارن بين الدكاترة",
+    "Up to three doctors, side by side.": "لحد 3 دكاترة، جنب بعض.",
+    "Plan": "الخطة",
+    "Payment": "الدفع",
+    "Confirmation": "التأكيد",
+    "Your selected doctor": "الدكتور اللي اخترته",
+    "Continue": "كمّل",
+    "Your selected plan": "الخطة اللي اخترتها",
+    "Back": "رجوع",
+    "Selected Plan": "الخطة المختارة",
+    "Billing Period": "فترة الفوترة",
+    "Monthly": "شهريًا",
+    "Subtotal": "الإجمالي الفرعي",
+    "Calculated at checkout": "بيتحسب وقت الدفع",
+    "Total": "الإجمالي",
+    "Cardholder Name": "اسم حامل البطاقة",
+    "Enter the cardholder's name.": "اكتب اسم حامل البطاقة.",
+    "Card Number": "رقم البطاقة",
+    "Enter a valid 16-digit card number.": "اكتب رقم بطاقة صحيح من 16 رقم.",
+    "Expiry": "تاريخ الانتهاء",
+    "Enter a valid expiry date.": "اكتب تاريخ انتهاء صحيح.",
+    "CVC": "CVC",
+    "Enter a valid CVC.": "اكتب رمز CVC صحيح.",
+    "Billing Address": "عنوان الفوترة",
+    "Enter a billing address.": "اكتب عنوان الفوترة.",
+    "Pay & Subscribe": "ادفع واشترك",
+    "Doctor monitoring is now active.": "متابعة الدكتور بقت شغالة دلوقتي.",
+    "Next review": "المراجعة الجاية",
+    "Within 3 days": "خلال 3 أيام",
+    "Subscription status": "حالة الاشتراك",
+    "Active": "نشط",
+    "Go to Doctor Monitoring": "روح لمتابعة الدكتور",
+    "View Subscription": "شوف الاشتراك",
+    "Starting from —": "بيبدأ من —",
+    "View Profile": "شوف البروفايل",
+    "Choose Doctor": "اختار الدكتور",
+    "No doctors match your filters. Try adjusting your search.": "مفيش دكاترة مطابقين للفلاتر. جرّب تعدّل البحث.",
+    "Languages": "اللغات",
+    "Areas of elderly-care experience": "مجالات الخبرة في رعاية كبار السن",
+    "Monitoring approach": "أسلوب المتابعة",
+    "Regular review, family communication": "مراجعة منتظمة، وتواصل مع العائلة",
+    "Availability": "التوافر",
+    "Response expectations": "توقع الرد",
+    "Within 24 hours": "خلال 24 ساعة",
+    "Subscription": "الاشتراك",
+    "Choose This Doctor": "اختار الدكتور ده",
+    "Compare Doctor": "قارن الدكتور",
+    "Specialty": "التخصص",
+    "Focuses on helping older adults stay independent at home through attentive, ongoing review of daily activity patterns.": "بيركّز على مساعدة كبار السن يفضلوا مستقلين في بيتهم من خلال مراجعة دقيقة ومستمرة لأنماط نشاطهم اليومي.",
+    "Works closely with families to interpret meaningful changes in routine and communicate clearly about what they mean.": "بيشتغل قريب من العائلات عشان يفسّر التغيرات المهمة في الروتين ويشرح معناها بوضوح.",
+    "Experienced in coordinating care between family members and connected home monitoring.": "خبرة في تنسيق الرعاية بين أفراد العائلة والمتابعة المنزلية المتصلة.",
+    "Specializes in supporting independent living for older adults through regular, low-friction check-ins.": "متخصص في دعم الاستقلالية لكبار السن من خلال متابعات منتظمة وبسيطة.",
+    "Available in 2 days": "متاح خلال يومين",
+    "Doctor Monitoring — ": "متابعة الدكتور — ",
+    "Movement and activity levels, and robot interactions — a general sense of presence and routine, not a live feed.": "مستويات الحركة والنشاط، وتفاعلات الروبوت — إحساس عام بالوجود والروتين، مش بث مباشر.",
+    "Activity patterns around meal times — whether the kitchen is being used as usual.": "أنماط النشاط حوالين أوقات الأكل — هل المطبخ بيتستخدم زي العادة ولا لأ.",
+    "Door activity — comings and goings, without recording who or what is seen.": "نشاط الباب — الدخول والخروج، من غير تسجيل مين أو إيه اللي بيتشاف.",
+    "years experience": "سنة خبرة",
+    "Verified": "موثّق",
+    "Compare": "قارن",
+    "years": "سنة",
+    "reviews": "تقييم",
+    "Shown at checkout": "بيظهر وقت الدفع",
+  };
+  function t(s){ return currentLang === 'ar' ? (dict[s] || s) : s; }
+
+  const doctors = [
+    { id:1, name:"Dr. Ahmed Hassan", specialty:"Geriatric Medicine", experience:15, rating:4.9, reviews:212, languages:["Arabic","English"], availability:"Available this week", verified:true, bio:"Focuses on helping older adults stay independent at home through attentive, ongoing review of daily activity patterns." },
+    { id:2, name:"Dr. Mariam Adel", specialty:"Internal Medicine", experience:12, rating:4.8, reviews:164, languages:["Arabic","English","French"], availability:"Available today", verified:true, bio:"Works closely with families to interpret meaningful changes in routine and communicate clearly about what they mean." },
+    { id:3, name:"Dr. Omar Khaled", specialty:"Family Medicine", experience:10, rating:4.7, reviews:98, languages:["Arabic","English"], availability:"Available in 2 days", verified:true, bio:"Experienced in coordinating care between family members and connected home monitoring." },
+    { id:4, name:"Dr. Salma Youssef", specialty:"Geriatric Care", experience:14, rating:4.9, reviews:187, languages:["Arabic","English"], availability:"Available this week", verified:true, bio:"Specializes in supporting independent living for older adults through regular, low-friction check-ins." }
+  ];
+  const avatarColors = ['var(--teal)','var(--sand-dark)'];
+
+  let compareList = [];
+  let selectedDoctorId = null;
+  let selectedPlan = null;
+
+  function renderDoctorCard(d, i){
+    const color = avatarColors[i % avatarColors.length];
+    const initials = d.name.replace('Dr. ','').split(' ').map(w=>w[0]).join('');
+    return `
+      <div class="doctor-card" data-id="${d.id}">
+        <div class="doc-avatar" style="background:${color};">${initials}</div>
+        <div style="flex:1;">
+          <p class="doc-name">${d.name} ${d.verified ? '<span class="verified-badge">' + t("Verified") + '</span>' : ''}</p>
+          <p class="doc-specialty">${t(d.specialty)} · ${d.experience}+ ${t('years experience')}</p>
+          <div class="doc-meta"><span>★ ${d.rating} (${d.reviews})</span><span>${d.languages.map(t).join('، ')}</span><span>${t(d.availability)}</span></div>
+          <p class="doc-bio">${t(d.bio)}</p>
+          <p class="doc-price">${t("Starting from —")} <span style="color:var(--ink-soft);">${t("Price shown at checkout").toLowerCase()}</span></p>
+          <div class="doc-actions">
+            <button class="btn btn-outline btn-sm view-profile-btn" data-id="${d.id}">${t("View Profile")}</button>
+            <button class="btn btn-primary btn-sm choose-doctor-btn" data-id="${d.id}">${t("Choose Doctor")}</button>
+            <label class="compare-check"><input type="checkbox" class="compare-checkbox" data-id="${d.id}" ${compareList.includes(d.id) ? 'checked' : ''}> ${t('Compare')}</label>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function getFilteredDoctors(){
+    const q = document.getElementById('doctorSearch').value.trim().toLowerCase();
+    const spec = document.getElementById('filterSpecialty').value;
+    const lang = document.getElementById('filterLanguage').value;
+    const avail = document.getElementById('filterAvailability').value;
+    const sort = document.getElementById('sortDoctors').value;
+
+    let list = doctors.filter(d => {
+      const matchesQ = !q || d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q);
+      const matchesSpec = !spec || d.specialty === spec;
+      const matchesLang = !lang || d.languages.includes(lang);
+      const matchesAvail = !avail || d.availability === avail;
+      return matchesQ && matchesSpec && matchesLang && matchesAvail;
+    });
+
+    if (sort === 'rating') list.sort((a,b) => b.rating - a.rating);
+    else if (sort === 'experience') list.sort((a,b) => b.experience - a.experience);
+
+    return list;
+  }
+
+  function renderDoctorGrid(){
+    const list = getFilteredDoctors();
+    const grid = document.getElementById('doctorGrid');
+    document.getElementById('resultsCount').textContent = currentLang==='ar' ? `تم العثور على ${list.length} دكتور` : `${list.length} doctor${list.length===1?'':'s'} found`;
+    grid.innerHTML = list.length ? list.map((d,i) => renderDoctorCard(d,i)).join('') : `<p class="no-results">${t('No doctors match your filters. Try adjusting your search.')}</p>`;
+    wireCardEvents();
+  }
+
+  function wireCardEvents(){
+    document.querySelectorAll('.view-profile-btn').forEach(btn => btn.addEventListener('click', () => openProfile(+btn.dataset.id)));
+    document.querySelectorAll('.choose-doctor-btn').forEach(btn => btn.addEventListener('click', () => chooseDoctor(+btn.dataset.id)));
+    document.querySelectorAll('.compare-checkbox').forEach(cb => cb.addEventListener('change', () => toggleCompare(+cb.dataset.id, cb.checked)));
+  }
+
+  ['doctorSearch','filterSpecialty','filterLanguage','filterAvailability','sortDoctors'].forEach(id => {
+    document.getElementById(id).addEventListener('input', renderDoctorGrid);
+  });
+
+  function openModal(id){ document.getElementById(id).classList.add('is-open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('is-open'); }
+  document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+  document.querySelectorAll('.modal-overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('is-open'); }));
+
+  function openProfile(id){
+    const d = doctors.find(x => x.id === id);
+    const initials = d.name.replace('Dr. ','').split(' ').map(w=>w[0]).join('');
+    document.getElementById('profileModalBody').innerHTML = `
+      <button class="modal-close" data-close="profileModal">✕</button>
+      <div style="display:flex; gap:1.2rem; align-items:center; margin-bottom:1.2rem;">
+        <div class="doc-avatar" style="width:76px; height:76px; font-size:1.5rem; background:var(--teal);">${initials}</div>
+        <div>
+          <h3 style="margin:0 0 0.2rem;">${d.name} ${d.verified ? '<span class="verified-badge">' + t('Verified') + '</span>' : ''}</h3>
+          <p style="margin:0; color:var(--ink-soft); font-size:0.92rem;">${t(d.specialty)} · ${d.experience}+ ${t('years')} · ★ ${d.rating} (${d.reviews} ${t('reviews')})</p>
+        </div>
+      </div>
+      <p style="font-size:0.92rem; color:var(--ink-soft); line-height:1.65;">${t(d.bio)}</p>
+      <div class="insight-row"><span>${t('Languages')}</span><span>${d.languages.map(t).join('، ')}</span></div>
+      <div class="insight-row"><span>${t('Areas of elderly-care experience')}</span><span>${t(d.specialty)}</span></div>
+      <div class="insight-row"><span>${t('Monitoring approach')}</span><span>${t('Regular review, family communication')}</span></div>
+      <div class="insight-row"><span>${t('Availability')}</span><span>${t(d.availability)}</span></div>
+      <div class="insight-row"><span>${t('Response expectations')}</span><span>${t('Within 24 hours')}</span></div>
+      <div class="insight-row"><span>${t('Subscription')}</span><span>${t('Price shown at checkout')}</span></div>
+      <div style="display:flex; gap:0.8rem; margin-top:1.4rem;">
+        <button class="btn btn-primary" onclick="chooseDoctor(${d.id}); closeModal('profileModal');">${t('Choose This Doctor')}</button>
+        <button class="btn btn-outline" onclick="toggleCompare(${d.id}, true); closeModal('profileModal');">${t('Compare Doctor')}</button>
+      </div>
+    `;
+    openModal('profileModal');
+  }
+  window.chooseDoctor = chooseDoctor;
+  window.toggleCompare = toggleCompare;
+
+  function chooseDoctor(id){
+    selectedDoctorId = id;
+    const d = doctors.find(x => x.id === id);
+    document.getElementById('selectedDoctorName').textContent = d.name;
+    document.getElementById('selectedDoctorSection').classList.add('is-shown');
+    updateSubscribeState();
+    document.getElementById('selectedDoctorSection').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function toggleCompare(id, forceOn){
+    const isOn = compareList.includes(id);
+    if (forceOn && isOn) { /* already on */ }
+    else if (isOn) compareList = compareList.filter(x => x !== id);
+    else if (compareList.length < 3) compareList.push(id);
+    else { alert('You can compare up to 3 doctors.'); return; }
+    renderDoctorGrid();
+    updateCompareTray();
+  }
+
+  function updateCompareTray(){
+    const tray = document.getElementById('compareTray');
+    if (compareList.length >= 2) {
+      tray.classList.add('is-shown');
+      document.getElementById('compareTrayNames').textContent = compareList.map(id => doctors.find(d=>d.id===id).name).join(' · ');
+    } else {
+      tray.classList.remove('is-shown');
+    }
+  }
+
+  document.getElementById('doctorGrid').insertAdjacentHTML('afterend', `
+    <div class="compare-tray" id="compareTray">
+      <span class="compare-tray__names" id="compareTrayNames"></span>
+      <div style="display:flex; gap:0.6rem;">
+        <button class="btn btn-outline btn-sm" style="border-color:rgba(255,255,255,0.3); color:#fff;" onclick="openCompareModal()">Compare</button>
+        <button class="btn btn-text" style="color:#C7CCC5;" onclick="compareList=[]; renderDoctorGrid(); updateCompareTray();">Clear</button>
+      </div>
+    </div>
+  `);
+
+  function openCompareModal(){
+    const list = compareList.map(id => doctors.find(d => d.id === id));
+    const rows = [
+      [t('Specialty'), d => t(d.specialty)],
+      [t('Experience'), d => d.experience + '+ ' + t('years')],
+      [t('Languages'), d => d.languages.map(t).join('، ')],
+      [t('Rating'), d => '★ ' + d.rating + ' (' + d.reviews + ')'],
+      [t('Availability'), d => t(d.availability)],
+      [t('Monitoring approach'), () => t('Regular review, family communication')],
+      [t('Subscription'), () => t('Price shown at checkout')]
+    ];
+    let html = '<div style="display:grid; grid-template-columns:140px repeat(' + list.length + ',1fr); gap:0.5rem 1rem;">';
+    html += '<div></div>' + list.map(d => `<div style="font-weight:600;">${d.name}</div>`).join('');
+    rows.forEach(([label, fn]) => {
+      html += `<div style="color:var(--ink-soft); font-size:0.85rem;">${label}</div>` + list.map(d => `<div style="font-size:0.88rem;">${fn(d)}</div>`).join('');
+    });
+    html += '</div>';
+    document.getElementById('compareTableWrap').innerHTML = html;
+    openModal('compareModal');
+  }
+  window.openCompareModal = openCompareModal;
+
+  // ================= Plans =================
+  document.querySelectorAll('.plan-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('is-selected'));
+      card.classList.add('is-selected');
+      selectedPlan = card.dataset.plan;
+      updateSubscribeState();
+    });
+  });
+
+  function updateSubscribeState(){
+    const btn = document.getElementById('subscribeBtn');
+    const hint = document.getElementById('subscribeHint');
+    const ready = selectedDoctorId && selectedPlan;
+    btn.disabled = !ready;
+    hint.textContent = ready ? '' : 'Select a doctor and a plan to continue.';
+  }
+
+  document.getElementById('subscribeBtn').addEventListener('click', () => {
+    const d = doctors.find(x => x.id === selectedDoctorId);
+    document.getElementById('checkoutDoctorSummary').innerHTML = `<div class="summary-row"><span>${t('Doctor')}</span><span>${d.name}</span></div><div class="summary-row"><span>${t('Specialty')}</span><span>${t(d.specialty)}</span></div>`;
+    const planNames = { essential:'Essential', plus:'Plus', comprehensive:'Comprehensive' };
+    document.getElementById('checkoutPlanSummary').innerHTML = `<div class="summary-row"><span>${t('Plan')}</span><span>${t(planNames[selectedPlan])}</span></div><div class="summary-row"><span>${t('Price')}</span><span>${t('Shown at checkout')}</span></div>`;
+    document.getElementById('paySummaryDoctor').textContent = d.name;
+    document.getElementById('paySummaryPlan').textContent = planNames[selectedPlan];
+    goToCheckoutStep(0);
+    openModal('checkoutModal');
+  });
+
+  // ================= Checkout steps =================
+  function goToCheckoutStep(n){
+    document.querySelectorAll('.checkout-step').forEach(s => {
+      const step = +s.dataset.step;
+      s.classList.toggle('is-active', step === n);
+      s.classList.toggle('is-done', step < n);
+    });
+    document.querySelectorAll('.checkout-panel').forEach(p => p.classList.toggle('is-active', +p.dataset.panel === n));
+  }
+  document.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', () => goToCheckoutStep(+btn.dataset.next)));
+  document.querySelectorAll('[data-prev]').forEach(btn => btn.addEventListener('click', () => goToCheckoutStep(+btn.dataset.prev)));
+
+  document.getElementById('payBtn').addEventListener('click', () => {
+    const nameEl = document.querySelector('#pf-name input');
+    const numEl = document.querySelector('#pf-number input');
+    const expEl = document.querySelector('#pf-expiry input');
+    const cvcEl = document.querySelector('#pf-cvc input');
+    const billEl = document.querySelector('#pf-billing input');
+
+    const nameOk = nameEl.value.trim().length > 1;
+    const numOk = numEl.value.replace(/\s/g,'').length === 16 && /^\d+$/.test(numEl.value.replace(/\s/g,''));
+    const expOk = /^\d{2}\/\d{2}$/.test(expEl.value.trim());
+    const cvcOk = /^\d{3,4}$/.test(cvcEl.value.trim());
+    const billOk = billEl.value.trim().length > 3;
+
+    document.getElementById('pf-name').classList.toggle('has-error', !nameOk);
+    document.getElementById('pf-number').classList.toggle('has-error', !numOk);
+    document.getElementById('pf-expiry').classList.toggle('has-error', !expOk);
+    document.getElementById('pf-cvc').classList.toggle('has-error', !cvcOk);
+    document.getElementById('pf-billing').classList.toggle('has-error', !billOk);
+
+    if (!(nameOk && numOk && expOk && cvcOk && billOk)) return;
+
+    const btn = document.getElementById('payBtn');
+    btn.textContent = 'Processing…'; btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Pay & Subscribe'; btn.disabled = false;
+      const d = doctors.find(x => x.id === selectedDoctorId);
+      const planNames = { essential:'Essential', plus:'Plus', comprehensive:'Comprehensive' };
+      document.getElementById('confirmText').textContent = currentLang==='ar' ? `${d.name} بقى متصل بنظام رعاية أحمد على إلدر جارديان+.` : `${d.name} is now connected to Ahmed's ElderGuardian+ care system.`;
+      document.getElementById('confirmDoctor').textContent = d.name;
+      document.getElementById('confirmPlan').textContent = planNames[selectedPlan];
+      goToCheckoutStep(3);
+    }, 1100);
+  });
+
+  // ================= Room signals =================
+  const roomSignals = {
+    bedroom: "Sleep and activity patterns, and bed occupancy patterns — enough to notice a change in rest, never a video of the room.",
+    living: "Movement and activity levels, and robot interactions — a general sense of presence and routine, not a live feed.",
+    kitchen: "Activity patterns around meal times — whether the kitchen is being used as usual.",
+    entrance: "Door activity — comings and goings, without recording who or what is seen."
+  };
+  document.querySelectorAll('#roomTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#roomTabs button').forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      document.getElementById('roomSignalBox').textContent = t(roomSignals[btn.dataset.room]);
+    });
+  });
+
+  renderDoctorGrid();
+
+  // ================= Static text translation (generic walker) =================
+  const origTextMap = new WeakMap();
+  function walkTranslate(root){
+    const skip = new Set(['SCRIPT','STYLE','NOSCRIPT']);
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        if (skip.has(node.parentNode.tagName)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    let node;
+    while (node = walker.nextNode()) {
+      if (!origTextMap.has(node)) origTextMap.set(node, node.nodeValue);
+      const original = origTextMap.get(node);
+      const trimmed = original.trim();
+      if (currentLang === 'ar' && dict[trimmed]) {
+        node.nodeValue = original.replace(trimmed, dict[trimmed]);
+      } else {
+        node.nodeValue = original;
+      }
+    }
+  }
+
+  const langToggle = document.createElement('div');
+  langToggle.className = 'lang-toggle';
+  langToggle.innerHTML = `
+    <button type="button" data-lang="en" class="is-active">EN</button>
+    <button type="button" data-lang="ar">AR</button>
+  `;
+  document.body.appendChild(langToggle);
+  const langStyle = document.createElement('style');
+  langStyle.textContent = `
+    .lang-toggle{position:fixed; top:1.2rem; right:1.2rem; z-index:200; display:flex; border:1px solid rgba(30,33,29,0.25); border-radius:999px; overflow:hidden; background:rgba(245,243,238,0.92); backdrop-filter:blur(6px); direction:ltr;}
+    .lang-toggle button{border:none; background:none; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'Public Sans',sans-serif; color:var(--ink-soft); cursor:pointer;}
+    .lang-toggle button.is-active{background:var(--teal); color:#0F1210; font-weight:600;}
+    html[dir="rtl"] .lang-toggle{right:auto; left:1.2rem;}
+  `;
+  document.head.appendChild(langStyle);
+
+  langToggle.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentLang = btn.dataset.lang;
+      langToggle.querySelectorAll('button').forEach(b => b.classList.toggle('is-active', b.dataset.lang === currentLang));
+      document.documentElement.setAttribute('lang', currentLang);
+      document.documentElement.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+      walkTranslate(document.body);
+      renderDoctorGrid();
+      updateCompareTray();
+    });
+  });
+</script>
+
+</body>
+</html>

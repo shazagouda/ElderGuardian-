@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#191C18;
+    --bg-dark-2:#15170F;
+    --bg-light:#F5F3EE;
+    --ink:#1E211D;
+    --ink-soft:#4B4E48;
+    --teal:#4F8079;
+    --silver:#C7CCC5;
+    --sand:#D8C9A9;
+    --sand-dark:#B79E77;
+    --rule-dark:rgba(255,255,255,0.14);
+    --rule-light:rgba(30,33,29,0.14);
+    --panel:#EDEAE0;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  .wrap{max-width:1320px; margin:0 auto; padding-left:5vw; padding-right:5vw;}
+
+  /* ---------- Nav ---------- */
+  .nav{position:fixed; top:0; left:0; right:0; z-index:60; background:rgba(245,243,238,0.86); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule-light); transition:background .3s ease;}
+  .nav__inner{max-width:1320px; margin:0 auto; padding:1.15rem 5vw; display:flex; align-items:center; justify-content:space-between; gap:2rem;}
+  .nav__logo{font-family:'Libre Caslon Display', serif; font-size:1.2rem; color:var(--ink); white-space:nowrap; display:flex; align-items:center; gap:0.5rem;}
+  .nav__logo img{height:28px; width:auto; display:block;}
+  .nav__links{display:flex; gap:2rem; list-style:none; margin:0; padding:0; font-size:0.93rem;}
+  .nav__links a{color:var(--ink-soft); text-decoration:none; padding-bottom:2px; border-bottom:1px solid transparent; transition:color .2s ease, border-color .2s ease;}
+  .nav__links a:hover, .nav__links a:focus-visible{color:var(--ink); border-color:var(--teal);}
+  .nav__links a.has-icon{display:inline-flex; align-items:center; gap:0.4rem;}
+  .nav__links a.has-icon svg{width:15px; height:15px; flex-shrink:0;}
+  .nav__right{display:flex; align-items:center; gap:1.4rem;}
+  .nav__signin{font-size:0.9rem; color:var(--ink-soft); text-decoration:none;}
+  .nav__signin:hover, .nav__signin:focus-visible{color:var(--ink);}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; font-family:'Public Sans',sans-serif; font-size:0.95rem; font-weight:600; padding:0.8rem 1.4rem; border-radius:5px; cursor:pointer; text-decoration:none; border:1px solid transparent; transition:transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease; white-space:nowrap;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#0F1210;}
+  .btn-primary:hover, .btn-primary:focus-visible{background:#5c9089;}
+  .btn-secondary{background:transparent; color:var(--ink); border-color:rgba(30,33,29,0.35);}
+  .btn-secondary:hover, .btn-secondary:focus-visible{border-color:var(--ink);}
+  .btn-nav{padding:0.6rem 1.15rem; font-size:0.88rem;}
+  .btn-dark{background:transparent; color:var(--ink); border-color:rgba(30,33,29,0.35);}
+  .btn-dark:hover, .btn-dark:focus-visible{border-color:var(--ink);}
+
+  a:focus-visible, button:focus-visible{outline:2px solid var(--teal); outline-offset:3px;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative; min-height:100vh; overflow:hidden; display:flex; flex-direction:column;}
+  .hero__scene-bg{position:absolute; inset:0; width:100%; height:100%; z-index:0; display:block;}
+  .hero__vignette{position:absolute; inset:0; z-index:1; background:linear-gradient(112deg, rgba(245,243,238,0.92) 0%, rgba(245,243,238,0.72) 20%, rgba(245,243,238,0.28) 44%, rgba(245,243,238,0) 60%);}
+  .hero__inner{position:relative; z-index:2; flex:1; display:flex; flex-direction:column; justify-content:flex-end; padding-top:9rem;}
+  .hero__content{max-width:33rem; padding:0 5vw 3rem;}
+  .hero__headline{font-size:clamp(2.3rem, 4.1vw, 3.6rem); line-height:1.08; margin:0 0 1.4rem; color:var(--ink); max-width:13ch;}
+  .hero__sub{font-size:1.08rem; line-height:1.65; color:var(--ink-soft); max-width:40ch; margin:0 0 2.1rem;}
+  .hero__actions{display:flex; align-items:center; gap:1.3rem; flex-wrap:wrap; margin-bottom:2.2rem;}
+  .hero__brandline{padding-top:1.3rem; border-top:1px solid var(--rule-light); font-size:0.93rem; color:var(--ink-soft); max-width:30ch;}
+
+  .status-rail{position:relative; z-index:2; display:flex; border-top:1px solid var(--rule-light); background:rgba(245,243,238,0.8); backdrop-filter:blur(8px);}
+  .status-rail li{list-style:none; flex:1; padding:1.1rem 1.6rem; border-left:1px solid var(--rule-light);}
+  .status-rail li:first-child{border-left:none;}
+  .status-rail{padding-left:5vw; padding-right:5vw; margin:0;}
+  .status__label{display:block; font-size:0.8rem; color:var(--ink-soft); margin-bottom:0.3rem;}
+  .status__value{display:block; font-size:0.98rem; color:var(--ink); font-weight:500;}
+  .status__value .dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-right:0.5rem;}
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0; transform:translateY(14px);}
+  .reveal.is-in{opacity:1; transform:translateY(0); transition:opacity .8s ease, transform .8s ease;}
+  @media (prefers-reduced-motion: reduce){ .reveal{opacity:1; transform:none; transition:none;} .pulse{animation:none !important;} }
+
+  .robot-light{animation:pulse 3.4s ease-in-out infinite; transform-origin:center;}
+  @keyframes pulse{0%,100%{opacity:0.6;} 50%{opacity:1;}}
+
+  /* ---------- Section shells ---------- */
+  section{padding:6.5rem 0;}
+  .eyebrow-rule{border:none; border-top:1px solid var(--rule-light); margin:0 0 1.6rem; width:3rem;}
+
+  /* Privacy */
+  .privacy{display:grid; grid-template-columns:0.95fr 1.15fr; gap:5rem; align-items:center;}
+  .privacy__head{font-size:clamp(1.8rem,2.7vw,2.4rem); line-height:1.2; margin:0 0 1.3rem; max-width:11ch;}
+  .privacy__body{font-size:1.05rem; line-height:1.72; color:var(--ink-soft); max-width:44ch; margin:0 0 1.8rem;}
+  .privacy__legend{display:flex; gap:1.8rem; flex-wrap:wrap; font-size:0.9rem; color:var(--ink-soft);}
+  .privacy__legend span{display:inline-flex; align-items:center; gap:0.5rem;}
+  .privacy__legend i{width:7px; height:7px; border-radius:50%; background:var(--teal); display:inline-block;}
+  .floorplan{width:100%; height:auto;}
+
+  /* How it works */
+  .how{background:var(--panel); color:var(--ink);}
+  .how__head{font-size:clamp(1.8rem,2.7vw,2.4rem); margin:0 0 3.5rem; max-width:16ch; color:var(--ink);}
+  .flow{display:flex; gap:0; position:relative;}
+  .flow::before{content:""; position:absolute; top:9px; left:0; right:0; height:1px; background:var(--rule-light);}
+  .flow__node{flex:1; padding-right:1.6rem; position:relative;}
+  .flow__num{display:block; font-size:0.85rem; color:var(--teal); margin-bottom:1.1rem; position:relative; z-index:1;}
+  .flow__num::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--panel); border:2px solid var(--teal); margin-right:0.5rem; vertical-align:middle; margin-top:-2px;}
+  .flow__title{font-size:1.08rem; font-weight:600; margin:0 0 0.5rem;}
+  .flow__desc{font-size:0.92rem; line-height:1.55; color:var(--ink-soft); margin:0; max-width:22ch;}
+
+  /* Family / Doctor split */
+  .split{display:grid; grid-template-columns:1fr 1px 1fr; gap:4rem;}
+  .split__col h3{font-size:1.5rem; margin:0 0 1rem;}
+  .split__col p{font-size:1rem; line-height:1.7; color:var(--ink-soft); max-width:36ch; margin:0 0 1.8rem;}
+  .split__rule{background:var(--rule-light);}
+  .mini-status{list-style:none; margin:0; padding:0; border-top:1px solid var(--rule-light);}
+  .mini-status li{display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--rule-light); font-size:0.92rem;}
+  .mini-status li span:first-child{color:var(--ink-soft);}
+  .mini-chart{width:100%; height:auto; margin-top:0.5rem;}
+
+  /* Robot teaser */
+  .robot-teaser{background:var(--bg-light); color:var(--ink); text-align:left; overflow:hidden; border-top:1px solid var(--rule-light);}
+  .robot-teaser__inner{display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:3rem;}
+  .robot-teaser__head{font-size:clamp(1.9rem,3vw,2.6rem); margin:0 0 1.2rem; max-width:11ch; color:var(--ink);}
+  .robot-teaser__body{font-size:1.02rem; line-height:1.7; color:var(--ink-soft); max-width:38ch; margin:0 0 1.8rem;}
+  .robot-teaser__link{font-size:0.98rem; color:var(--ink); text-decoration:none; border-bottom:1px solid rgba(30,33,29,0.35); padding-bottom:2px;}
+  .robot-teaser__link:hover, .robot-teaser__link:focus-visible{border-color:var(--teal); color:var(--teal);}
+  .robot-hero-svg{width:100%; max-width:340px; height:auto; display:block; margin:0 auto;}
+
+  /* Footer */
+  footer{background:var(--panel); color:var(--ink-soft); padding:4.5rem 0 2rem; border-top:1px solid var(--rule-light);}
+  .footer__grid{display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:2.5rem; margin-bottom:3.5rem;}
+  .footer__brand{font-family:'Libre Caslon Display',serif; font-size:1.3rem; color:var(--ink); margin-bottom:0.8rem;}
+  .footer__tagline{font-size:0.92rem; max-width:22ch; line-height:1.5;}
+  .footer__col h4{font-size:0.85rem; color:var(--ink); margin:0 0 1rem; font-weight:600;}
+  .footer__col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.7rem;}
+  .footer__col a{color:var(--ink-soft); text-decoration:none; font-size:0.92rem;}
+  .footer__col a:hover, .footer__col a:focus-visible{color:var(--ink);}
+  .footer__bottom{border-top:1px solid var(--rule-light); padding-top:1.5rem; font-size:0.82rem; color:#7C8078; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .nav__links{display:none;}
+    .privacy{grid-template-columns:1fr;}
+    .split{grid-template-columns:1fr; gap:2.5rem;}
+    .split__rule{display:none;}
+    .robot-teaser__inner{grid-template-columns:1fr; text-align:center;}
+    .robot-teaser__body{margin-left:auto; margin-right:auto;}
+    .flow{flex-direction:column; gap:2rem;}
+    .flow::before{display:none;}
+    .footer__grid{grid-template-columns:1fr 1fr; row-gap:2.5rem;}
+  }
+  @media (max-width:600px){
+    .status-rail{flex-direction:column;}
+    .status-rail li{border-left:none; border-top:1px solid var(--rule-light); padding:0.9rem 0;}
+    .status-rail li:first-child{border-top:none;}
+    .nav__signin{display:none;}
+    .footer__grid{grid-template-columns:1fr;}
+    section{padding:4.5rem 0;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <div class="nav__logo"><img src="logo.jpg" alt="ElderGuardian+ logo">ElderGuardian+</div>
+    <ul class="nav__links">
+      <li><a href="elderguardian-robot-standalone.html" data-en="Robot" data-ar="الروبوت">Robot</a></li>
+      <li><a href="elderguardian-sensors.html" data-en="Smart Sensors" data-ar="حساسات ذكية">Smart Sensors</a></li>
+      <li><a href="elderguardian-doctor-marketplace.html" data-en="Doctor Care" data-ar="رعاية الدكاترة">Doctor Care</a></li>
+      <li><a href="elderguardian-help.html" data-en="Support" data-ar="الدعم">Support</a></li>
+      <li><a class="has-icon" href="elderguardian-mobile-app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2.5" width="10" height="19" rx="2"/><line x1="11" y1="18.2" x2="13" y2="18.2" stroke-linecap="round"/></svg><span data-en="Mobile App" data-ar="تطبيق الموبايل">Mobile App</span></a></li>
+    </ul>
+    <div class="nav__right">
+      <a class="nav__signin" href="elderguardian-login.html" data-en="Sign In" data-ar="تسجيل الدخول">Sign In</a>
+      <a class="btn btn-primary btn-nav" href="elderguardian-configurator.html" data-en="Build Your System" data-ar="ابنِ نظامك">Build Your System</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <svg class="hero__scene-bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A woman in her late sixties walks through her living room in soft morning light, holding a cup of tea, while the low, rounded ElderGuardian+ companion robot moves alongside her.">
+    <defs>
+      <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F3F0E6"/>
+        <stop offset="100%" stop-color="#E6E0CF"/>
+      </linearGradient>
+      <linearGradient id="lightWash" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#D8C9A9" stop-opacity="0.35"/>
+        <stop offset="55%" stop-color="#D8C9A9" stop-opacity="0.08"/>
+        <stop offset="100%" stop-color="#D8C9A9" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="windowGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF4E1" stop-opacity="0.98"/>
+        <stop offset="100%" stop-color="#E9D9AE" stop-opacity="0.75"/>
+      </linearGradient>
+      <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E2DBC7"/>
+        <stop offset="100%" stop-color="#D3C9AE"/>
+      </linearGradient>
+      <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#F6E9C4" stop-opacity="0.65"/>
+        <stop offset="100%" stop-color="#F6E9C4" stop-opacity="0"/>
+      </radialGradient>
+      <!-- ElderGuardian+ robot — shared 3D-style shading, reused by the hero scene and the teaser section -->
+      <radialGradient id="robotHeadGrad" cx="35%" cy="28%" r="80%">
+        <stop offset="0%" stop-color="#FFFFFF"/>
+        <stop offset="55%" stop-color="#F0EEE7"/>
+        <stop offset="100%" stop-color="#C7C4B9"/>
+      </radialGradient>
+      <linearGradient id="robotDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF"/>
+        <stop offset="55%" stop-color="#E9E7DE"/>
+        <stop offset="100%" stop-color="#C2BFB3"/>
+      </linearGradient>
+      <linearGradient id="robotBaseGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#E7E5DC"/>
+        <stop offset="100%" stop-color="#B3B0A4"/>
+      </linearGradient>
+      <linearGradient id="robotFootGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#9C9884"/>
+        <stop offset="100%" stop-color="#6C6952"/>
+      </linearGradient>
+      <linearGradient id="robotVisorGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2E312B"/>
+        <stop offset="100%" stop-color="#101210"/>
+      </linearGradient>
+      <linearGradient id="robotLightGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#3D6961"/>
+        <stop offset="50%" stop-color="#6FAA9F"/>
+        <stop offset="100%" stop-color="#3D6961"/>
+      </linearGradient>
+    </defs>
+
+    <rect x="0" y="0" width="1600" height="900" fill="url(#wallGrad)"/>
+    <rect x="0" y="0" width="1600" height="900" fill="url(#lightWash)"/>
+    <rect x="0" y="600" width="1600" height="300" fill="url(#floorGrad)"/>
+
+    <!-- window -->
+    <rect x="1180" y="90" width="340" height="420" rx="4" fill="#F8F2DE"/>
+    <rect x="1194" y="104" width="312" height="392" fill="url(#windowGrad)"/>
+    <rect x="1180" y="90" width="340" height="420" rx="4" fill="none" stroke="#8A8168" stroke-width="7"/>
+    <line x1="1350" y1="90" x2="1350" y2="510" stroke="#8A8168" stroke-width="6"/>
+    <line x1="1180" y1="300" x2="1520" y2="300" stroke="#8A8168" stroke-width="6"/>
+
+    <!-- framed artwork -->
+    <g transform="translate(760,190)">
+      <rect x="0" y="0" width="150" height="110" rx="2" fill="#EFE9D9" stroke="#B7A98A" stroke-width="4"/>
+      <path d="M14,84 L52,36 L78,60 L102,20 L136,84 Z" fill="#4F8079" opacity="0.55"/>
+    </g>
+
+    <!-- floor lamp -->
+    <g transform="translate(210,380)">
+      <ellipse cx="0" cy="12" rx="90" ry="26" fill="url(#lampGlow)"/>
+      <path d="M-38,-30 L38,-30 L20,-6 L-20,-6 Z" fill="#8A7A5C"/>
+      <rect x="-3" y="-6" width="6" height="226" fill="#6B5D46"/>
+      <ellipse cx="0" cy="222" rx="34" ry="8" fill="#5A4E3A"/>
+    </g>
+
+    <!-- cropped sofa, left edge -->
+    <path d="M-40,660 C-30,590 40,570 140,580 C230,588 260,620 258,660 L258,730 L-40,730 Z" fill="#CBBEA0"/>
+
+    <!-- rug -->
+    <ellipse cx="980" cy="760" rx="430" ry="70" fill="#E4DCC7"/>
+    <ellipse cx="980" cy="760" rx="360" ry="56" fill="none" stroke="#C9BBA0" stroke-width="2"/>
+
+    <!-- plant, right edge -->
+    <g transform="translate(1560,560)">
+      <rect x="-22" y="70" width="44" height="56" rx="4" fill="#7A6B50"/>
+      <path d="M0,70 C-36,26 -40,-30 -8,-64" stroke="#5B7A63" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M0,70 C28,30 34,-18 10,-56" stroke="#4F8079" stroke-width="8" fill="none" stroke-linecap="round"/>
+    </g>
+
+    <!-- ground contact shadow for woman + robot -->
+    <ellipse cx="1010" cy="800" rx="230" ry="26" fill="#3A3327" opacity="0.22"/>
+
+    <!-- ================= WOMAN ================= -->
+    <g transform="translate(1040,796)">
+      <!-- back leg (shadow side) -->
+      <path d="M-26,-6 L-36,0 L-14,0 L-6,-6 L-12,-152 L-28,-152 Z" fill="#B79E77"/>
+      <!-- front leg (lit side) -->
+      <path d="M8,-6 L26,0 L44,0 L34,-6 L22,-152 L4,-152 Z" fill="#D8C9A9"/>
+      <!-- hip bridge -->
+      <rect x="-28" y="-172" width="58" height="26" rx="14" fill="#C9B48A"/>
+      <!-- torso: shadow half -->
+      <path d="M-30,-172 C-38,-214 -30,-252 -4,-260 L-4,-172 Z" fill="#D3C7AE"/>
+      <!-- torso: lit half -->
+      <path d="M-4,-172 C-4,-260 26,-256 34,-214 C38,-198 34,-182 26,-172 Z" fill="#EDE6D6"/>
+      <!-- inner top (teal) peeking at collar -->
+      <path d="M-10,-250 C-4,-258 8,-258 14,-250 L10,-224 L-6,-224 Z" fill="#4F8079"/>
+      <!-- relaxed arm, shadow side -->
+      <path d="M-30,-250 C-46,-238 -50,-208 -40,-176 L-22,-180 C-26,-206 -22,-232 -14,-248 Z" fill="#C9BBA0"/>
+      <!-- bent arm holding mug, lit side -->
+      <path d="M26,-252 C42,-240 46,-216 34,-198 L14,-206 C22,-220 22,-236 16,-248 Z" fill="#EDE6D6"/>
+      <!-- mug -->
+      <g transform="translate(20,-198)">
+        <rect x="-12" y="-8" width="26" height="20" rx="4" fill="#E7E1D2"/>
+        <path d="M14,-4 C24,-4 24,10 14,10" stroke="#E7E1D2" stroke-width="4" fill="none"/>
+        <path d="M-4,-14 C-2,-20 4,-20 6,-14" stroke="#C7CCC5" stroke-width="2" fill="none" opacity="0.7"/>
+      </g>
+      <!-- neck -->
+      <rect x="-6" y="-268" width="18" height="16" rx="4" fill="#E6C9A6"/>
+      <!-- head -->
+      <circle cx="4" cy="-292" r="32" fill="#E6C9A6"/>
+      <!-- face light plane -->
+      <path d="M4,-320 C22,-320 30,-304 28,-286 C26,-272 16,-264 6,-264 Z" fill="#F1DAB9" opacity="0.75"/>
+      <!-- soft smile + brow, minimal -->
+      <path d="M-2,-282 C4,-276 12,-276 16,-282" stroke="#8A6A4C" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <path d="M12,-300 C16,-302 20,-302 22,-300" stroke="#8A6A4C" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.5"/>
+      <!-- hair -->
+      <path d="M-28,-296 C-34,-330 6,-344 30,-322 C38,-314 36,-302 30,-296 C26,-316 -2,-324 -18,-306 C-24,-300 -26,-298 -28,-296 Z" fill="#E9E6DE"/>
+      <path d="M-26,-292 C-30,-278 -24,-266 -10,-262 C-18,-272 -20,-284 -16,-294 Z" fill="#D6D2C6"/>
+      <!-- low bun -->
+      <circle cx="-22" cy="-296" r="12" fill="#E3E0D6"/>
+    </g>
+
+    <!-- ================= ROBOT (same design as elderguardian-sensors.html) ================= -->
+    <g transform="translate(1168,798) scale(0.44)">
+      <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+      <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+      <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+      <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+      <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+      <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+      <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+      <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+      <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+      <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+      <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+      <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)" class="robot-light"/>
+      <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+    </g>
+  </svg>
+
+  <div class="hero__vignette"></div>
+
+  <div class="hero__inner">
+    <div class="hero__content reveal" id="heroText">
+      <h1 class="hero__headline display" data-en="Mornings look the same. That's the point." data-ar="الصبح بيفضل زي ما هو. وده المقصود.">Mornings look the same. That's the point.</h1>
+      <p class="hero__sub" data-en="ElderGuardian+ pairs a quiet home companion with sensors that notice what matters, so your family knows she's alright without anyone watching her all day." data-ar="إلدر جارديان+ بيجمع بين رفيق هادئ في البيت وحساسات بتلاحظ اللي يهم، عشان عيلتك تعرف إنها بخير من غير ما حد يراقبها طول اليوم.">ElderGuardian+ pairs a quiet home companion with sensors that notice what matters, so your family knows she's alright without anyone watching her all day.</p>
+      <div class="hero__actions">
+        <a class="btn btn-primary" href="elderguardian-configurator.html" data-en="Build Your Care System" data-ar="ابنِ نظام الرعاية">Build Your Care System</a>
+        <a class="btn btn-secondary" href="elderguardian-robot-standalone.html" data-en="Explore the Robot" data-ar="استكشف الروبوت">Explore the Robot</a>
+      </div>
+      <p class="hero__brandline" data-en="Technology that protects independence." data-ar="تكنولوجيا بتحمي الاستقلالية.">Technology that protects independence.</p>
+    </div>
+    <ul class="status-rail reveal" id="heroStatus">
+      <li><span class="status__label" data-en="Home Environment" data-ar="بيئة البيت">Home Environment</span><span class="status__value"><span class="dot"></span><span data-en="Normal" data-ar="طبيعي">Normal</span></span></li>
+      <li><span class="status__label" data-en="Activity" data-ar="النشاط">Activity</span><span class="status__value"><span class="dot"></span><span data-en="Normal" data-ar="طبيعي">Normal</span></span></li>
+      <li><span class="status__label" data-en="Medication" data-ar="الدوا">Medication</span><span class="status__value"><span class="dot"></span><span data-en="On schedule" data-ar="في الميعاد">On schedule</span></span></li>
+      <li><span class="status__label" data-en="Robot" data-ar="الروبوت">Robot</span><span class="status__value"><span class="dot"></span><span data-en="Online" data-ar="متصل">Online</span></span></li>
+      <li><span class="status__label" data-en="Temperature" data-ar="درجة الحرارة">Temperature</span><span class="status__value">24°C</span></li>
+    </ul>
+  </div>
+</header>
+
+<!-- ================= PRIVACY ================= -->
+<section class="wrap">
+  <div class="privacy">
+    <div class="reveal">
+      <hr class="eyebrow-rule">
+      <h2 class="privacy__head display" data-en="No cameras. No constant watching." data-ar="من غير كاميرات. من غير مراقبة مستمرة.">No cameras. No constant watching.</h2>
+      <p class="privacy__body" data-en="ElderGuardian+ reads a home through motion, doors, temperature, and rest, never through a lens. It learns what an ordinary day looks like, so it can tell the difference when something changes, without recording a single moment of it." data-ar="إلدر جارديان+ بيفهم البيت من خلال الحركة والأبواب ودرجة الحرارة والراحة، مش من خلال عدسة كاميرا. بيتعلم شكل اليوم العادي، عشان يقدر يفرق لما تحصل حاجة تتغير، من غير ما يسجل أي لحظة منها.">ElderGuardian+ reads a home through motion, doors, temperature, and rest, never through a lens. It learns what an ordinary day looks like, so it can tell the difference when something changes, without recording a single moment of it.</p>
+      <div class="privacy__legend">
+        <span><i></i><span data-en="Motion" data-ar="الحركة">Motion</span></span>
+        <span><i></i><span data-en="Door" data-ar="الباب">Door</span></span>
+        <span><i></i><span data-en="Bed activity" data-ar="نشاط السرير">Bed activity</span></span>
+        <span><i></i><span data-en="Temperature" data-ar="درجة الحرارة">Temperature</span></span>
+      </div>
+    </div>
+    <svg class="floorplan reveal" viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simplified floor plan showing where sensors quietly sit in the home: bedroom, bathroom, kitchen, and living room.">
+      <g fill="none" stroke="#B9C0B7" stroke-width="2">
+        <rect x="20" y="20" width="520" height="340" rx="4"/>
+        <line x1="300" y1="20" x2="300" y2="200"/>
+        <line x1="300" y1="200" x2="540" y2="200"/>
+        <line x1="20" y1="230" x2="180" y2="230"/>
+        <line x1="180" y1="230" x2="180" y2="360"/>
+      </g>
+      <g fill="#4F8079">
+        <circle cx="120" cy="70" r="6"/>
+        <circle cx="420" cy="60" r="6"/>
+        <circle cx="90" cy="290" r="6"/>
+        <circle cx="440" cy="280" r="6"/>
+        <circle cx="260" cy="20" r="6"/>
+      </g>
+      <g font-family="Public Sans" font-size="13" fill="#4B4E48">
+        <text x="70" y="120" data-en="Bedroom" data-ar="أوضة النوم">Bedroom</text>
+        <text x="380" y="45" data-en="Bathroom" data-ar="الحمام">Bathroom</text>
+        <text x="40" y="330" data-en="Kitchen" data-ar="المطبخ">Kitchen</text>
+        <text x="360" y="240" data-en="Living room" data-ar="الصالة">Living room</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="how">
+  <div class="wrap">
+    <h2 class="how__head display reveal" data-en="A quiet system, working in the background" data-ar="نظام هادئ، شغال في الخلفية">A quiet system, working in the background</h2>
+    <div class="flow">
+      <div class="flow__node reveal">
+        <span class="flow__num">1</span>
+        <p class="flow__title" data-en="Sense" data-ar="الاستشعار">Sense</p>
+        <p class="flow__desc" data-en="Sensors placed around the home collect motion, temperature, and activity signals." data-ar="الحساسات المنتشرة في البيت بتجمع إشارات الحركة ودرجة الحرارة والنشاط.">Sensors placed around the home collect motion, temperature, and activity signals.</p>
+      </div>
+      <div class="flow__node reveal">
+        <span class="flow__num">2</span>
+        <p class="flow__title" data-en="Understand" data-ar="الفهم">Understand</p>
+        <p class="flow__desc" data-en="The platform learns ordinary patterns and notices meaningful changes." data-ar="المنصة بتتعلم الأنماط العادية وبتلاحظ أي تغييرات مهمة.">The platform learns ordinary patterns and notices meaningful changes.</p>
+      </div>
+      <div class="flow__node reveal">
+        <span class="flow__num">3</span>
+        <p class="flow__title" data-en="Assist" data-ar="المساعدة">Assist</p>
+        <p class="flow__desc" data-en="The robot offers gentle reminders and stays nearby when it's useful." data-ar="الروبوت بيقدم تذكيرات هادئة وبيفضل قريب لما يكون مفيد.">The robot offers gentle reminders and stays nearby when it's useful.</p>
+      </div>
+      <div class="flow__node reveal">
+        <span class="flow__num">4</span>
+        <p class="flow__title" data-en="Connect" data-ar="التواصل">Connect</p>
+        <p class="flow__desc" data-en="Family members are told what matters, not everything that happens." data-ar="أفراد العيلة بيعرفوا اللي يهمهم، مش كل حاجة بتحصل.">Family members are told what matters, not everything that happens.</p>
+      </div>
+      <div class="flow__node reveal">
+        <span class="flow__num">5</span>
+        <p class="flow__title" data-en="Support" data-ar="الدعم">Support</p>
+        <p class="flow__desc" data-en="Doctors can review activity trends when a closer look is needed." data-ar="الدكاترة يقدروا يراجعوا اتجاهات النشاط لما يكون محتاج نظرة أقرب.">Doctors can review activity trends when a closer look is needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAMILY / DOCTOR ================= -->
+<section class="wrap">
+  <div class="split">
+    <div class="split__col reveal">
+      <h3 class="display" data-en="For families" data-ar="للعيلة">For families</h3>
+      <p data-en="A simple daily picture, not a video feed. Know that today looked like most other days, and hear about it quickly when it didn't." data-ar="صورة يومية بسيطة، مش بث فيديو. اعرف إن النهاردة كان شبه معظم الأيام التانية، واعرف بسرعة لو مكنش كده.">A simple daily picture, not a video feed. Know that today looked like most other days, and hear about it quickly when it didn't.</p>
+      <ul class="mini-status">
+        <li><span data-en="Elder status" data-ar="حالة كبير السن">Elder status</span><span data-en="Safe" data-ar="بخير">Safe</span></li>
+        <li><span data-en="Medication" data-ar="الدوا">Medication</span><span data-en="Taken" data-ar="اتاخد">Taken</span></li>
+        <li><span data-en="Sleep last night" data-ar="النوم إمبارح بالليل">Sleep last night</span><span data-en="Normal" data-ar="طبيعي">Normal</span></li>
+        <li><span data-en="Robot battery" data-ar="بطارية الروبوت">Robot battery</span><span>86%</span></li>
+      </ul>
+    </div>
+    <div class="split__rule"></div>
+    <div class="split__col reveal">
+      <h3 class="display" data-en="For care teams" data-ar="لفرق الرعاية">For care teams</h3>
+      <p data-en="Doctors see activity trends and adherence over time, not raw footage, so a five-minute check-in can be a meaningful one." data-ar="الدكاترة بيشوفوا اتجاهات النشاط والالتزام مع الوقت، مش تسجيلات خام، عشان متابعة خمس دقايق تكون ليها معنى.">Doctors see activity trends and adherence over time, not raw footage, so a five-minute check-in can be a meaningful one.</p>
+      <svg class="mini-chart" viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simple line chart showing steady weekly activity levels.">
+        <polyline points="0,70 50,60 100,64 150,45 200,50 250,38 300,42 350,30 400,34" fill="none" stroke="#4F8079" stroke-width="3"/>
+        <line x1="0" y1="90" x2="400" y2="90" stroke="#E3E7E0" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROBOT TEASER ================= -->
+<section class="robot-teaser">
+  <div class="wrap robot-teaser__inner">
+    <div class="reveal">
+      <svg class="robot-hero-svg" viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The ElderGuardian+ companion robot: a low, rounded, silver device with a spherical head, a dark visor and a soft teal light band, the same design used throughout the site.">
+        <ellipse cx="0" cy="6" rx="72" ry="12" fill="#0E0F0A" opacity="0.18"/>
+        <ellipse cx="-34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+        <ellipse cx="34" cy="-6" rx="15" ry="9" fill="url(#robotFootGrad)"/>
+        <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#robotBaseGrad)"/>
+        <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#robotDomeGrad)"/>
+        <path d="M2,-132 C34,-126 50,-92 46,-50 C43,-42 24,-38 2,-37 Z" fill="#B9B6AB" opacity="0.4"/>
+        <rect x="-14" y="-146" width="28" height="18" rx="8" fill="#DAD7CC"/>
+        <circle cx="0" cy="-206" r="66" fill="url(#robotHeadGrad)"/>
+        <path d="M20,-266 C48,-250 62,-224 60,-196 C59,-180 48,-166 32,-158 C48,-176 52,-200 46,-224 C42,-242 32,-256 20,-266 Z" fill="#AFACA0" opacity="0.4"/>
+        <ellipse cx="-22" cy="-238" rx="20" ry="12" fill="#FFFFFF" opacity="0.5"/>
+        <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#robotVisorGrad)"/>
+        <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#robotLightGrad)" class="robot-light"/>
+        <ellipse cx="-14" cy="-224" rx="10" ry="4" fill="#FFFFFF" opacity="0.22"/>
+      </svg>
+    </div>
+    <div class="reveal">
+      <h2 class="robot-teaser__head display" data-en="One companion. Everywhere in the home." data-ar="رفيق واحد. في كل حتة في البيت.">One companion. Everywhere in the home.</h2>
+      <p class="robot-teaser__body" data-en="Low to the floor, quiet in the room, and built to stay out of the way until it's needed. The same recognizable shape, on every floor of the house." data-ar="قريب من الأرض، هادئ في الأوضة، ومصمم إنه يفضل بعيد عن الطريق لحد ما يتحتاج. نفس الشكل المعروف، في كل دور في البيت.">Low to the floor, quiet in the room, and built to stay out of the way until it's needed. The same recognizable shape, on every floor of the house.</p>
+      <a class="robot-teaser__link" href="elderguardian-robot-standalone.html" data-en="Explore the Robot" data-ar="استكشف الروبوت">Explore the Robot</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">ElderGuardian+</div>
+        <p class="footer__tagline" data-en="Technology that protects independence." data-ar="تكنولوجيا بتحمي الاستقلالية.">Technology that protects independence.</p>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Product" data-ar="المنتج">Product</h4>
+        <ul>
+          <li><a href="#" data-en="The Robot" data-ar="الروبوت">The Robot</a></li>
+          <li><a href="#" data-en="Smart Sensors" data-ar="حساسات ذكية">Smart Sensors</a></li>
+          <li><a href="#" data-en="Care System" data-ar="نظام الرعاية">Care System</a></li>
+          <li><a href="#" data-en="Doctor Care" data-ar="رعاية الدكاترة">Doctor Care</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Services" data-ar="الخدمات">Services</h4>
+        <ul>
+          <li><a href="#" data-en="Installation" data-ar="التركيب">Installation</a></li>
+          <li><a href="#" data-en="Maintenance" data-ar="الصيانة">Maintenance</a></li>
+          <li><a href="#" data-en="Support" data-ar="الدعم">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Company" data-ar="الشركة">Company</h4>
+        <ul>
+          <li><a href="#" data-en="About" data-ar="من إحنا">About</a></li>
+          <li><a href="#" data-en="Privacy" data-ar="الخصوصية">Privacy</a></li>
+          <li><a href="#" data-en="Security" data-ar="الأمان">Security</a></li>
+          <li><a href="#" data-en="Terms" data-ar="الشروط">Terms</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Account" data-ar="الحساب">Account</h4>
+        <ul>
+          <li><a href="#" data-en="Sign In" data-ar="تسجيل الدخول">Sign In</a></li>
+          <li><a href="#" data-en="Orders" data-ar="الطلبات">Orders</a></li>
+          <li><a href="#" data-en="Dashboard" data-ar="لوحة التحكم">Dashboard</a></li>
+        </ul>
+      </div>
+    </div>
+   
+  </div>
+</footer>
+
+<script>
+  const items = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  items.forEach(el => io.observe(el));
+</script>
+
+<style>
+  .lang-toggle{position:fixed; top:1.2rem; right:1.2rem; z-index:80; display:flex; border:1px solid rgba(30,33,29,0.25); border-radius:999px; overflow:hidden; background:rgba(245,243,238,0.9); backdrop-filter:blur(6px); direction:ltr;}
+  .lang-toggle button{border:none; background:none; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'Public Sans',sans-serif; color:var(--ink-soft); cursor:pointer;}
+  .lang-toggle button.is-active{background:var(--teal); color:#0F1210; font-weight:600;}
+</style>
+<div class="lang-toggle">
+  <button type="button" data-lang="en" class="is-active">EN</button>
+  <button type="button" data-lang="ar">AR</button>
+</div>
+<script>
+  document.querySelectorAll('.lang-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('is-active', b.dataset.lang === lang));
+      document.documentElement.setAttribute('lang', lang);
+      document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      document.title = lang === 'ar' ? 'إلدر جارديان+ — الرئيسية' : 'ElderGuardian+ — Home';
+      document.querySelectorAll('[data-en]').forEach(el => {
+        el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

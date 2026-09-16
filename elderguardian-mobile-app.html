@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElderGuardian+ — Mobile App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#191C18;
+    --bg-dark-2:#15170F;
+    --bg-light:#F5F3EE;
+    --ink:#1E211D;
+    --ink-soft:#4B4E48;
+    --teal:#4F8079;
+    --silver:#C7CCC5;
+    --sand:#D8C9A9;
+    --sand-dark:#B79E77;
+    --rule-dark:rgba(255,255,255,0.14);
+    --rule-light:rgba(30,33,29,0.14);
+    --panel:#EDEAE0;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Public Sans',system-ui,sans-serif; background:var(--bg-light); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  a{color:inherit;}
+  .display{font-family:'Libre Caslon Display', Georgia, serif;}
+  .wrap{max-width:1320px; margin:0 auto; padding-left:5vw; padding-right:5vw;}
+
+  /* ---------- Nav ---------- */
+  .nav{position:fixed; top:0; left:0; right:0; z-index:60; background:rgba(245,243,238,0.86); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule-light);}
+  .nav__inner{max-width:1320px; margin:0 auto; padding:1.15rem 5vw; display:flex; align-items:center; justify-content:space-between; gap:2rem;}
+  .nav__logo{font-family:'Libre Caslon Display', serif; font-size:1.2rem; color:var(--ink); white-space:nowrap; display:flex; align-items:center; gap:0.5rem;}
+  .nav__logo img{height:28px; width:auto; display:block;}
+  .nav__links{display:flex; gap:2rem; list-style:none; margin:0; padding:0; font-size:0.93rem;}
+  .nav__links a{color:var(--ink-soft); text-decoration:none; padding-bottom:2px; border-bottom:1px solid transparent; transition:color .2s ease, border-color .2s ease;}
+  .nav__links a:hover, .nav__links a:focus-visible, .nav__links a.is-current{color:var(--ink); border-color:var(--teal);}
+  .nav__links a.has-icon{display:inline-flex; align-items:center; gap:0.4rem;}
+  .nav__links a.has-icon svg{width:15px; height:15px; flex-shrink:0;}
+  .nav__right{display:flex; align-items:center; gap:1.4rem;}
+  .nav__signin{font-size:0.9rem; color:var(--ink-soft); text-decoration:none;}
+  .nav__signin:hover, .nav__signin:focus-visible{color:var(--ink);}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; font-family:'Public Sans',sans-serif; font-size:0.95rem; font-weight:600; padding:0.8rem 1.4rem; border-radius:5px; cursor:pointer; text-decoration:none; border:1px solid transparent; transition:transform .15s ease, background .2s ease, border-color .2s ease, color .2s ease; white-space:nowrap;}
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal); color:#0F1210;}
+  .btn-primary:hover, .btn-primary:focus-visible{background:#5c9089;}
+  .btn-nav{padding:0.6rem 1.15rem; font-size:0.88rem;}
+
+  a:focus-visible, button:focus-visible{outline:2px solid var(--teal); outline-offset:3px;}
+
+  /* ---------- Hero ---------- */
+  .app-hero{padding:6rem 0 5rem; background:radial-gradient(ellipse at 78% 30%, #EAF0EC 0%, var(--bg-light) 60%);}
+  .app-hero__grid{display:grid; grid-template-columns:1.05fr 0.95fr; gap:3.5rem; align-items:center;}
+  .eyebrow{font-size:0.85rem; letter-spacing:0.06em; color:var(--teal); margin:0 0 1rem; font-weight:600;}
+  .app-hero__head{font-size:clamp(2.2rem,3.6vw,3.1rem); line-height:1.1; margin:0 0 1.2rem; max-width:14ch;}
+  .app-hero__sub{font-size:1.05rem; line-height:1.65; color:var(--ink-soft); max-width:38ch; margin:0 0 2rem;}
+  .store-badges{display:flex; gap:0.9rem; flex-wrap:wrap; margin-bottom:2.2rem;}
+  .store-badge{display:inline-flex; align-items:center; gap:0.65rem; background:var(--ink); color:#F5F3EE; border-radius:8px; padding:0.65rem 1.1rem; text-decoration:none;}
+  .store-badge svg{width:22px; height:22px; flex-shrink:0;}
+  .store-badge span{display:block; line-height:1.2;}
+  .store-badge .store-badge__small{font-size:0.68rem; opacity:0.8;}
+  .store-badge .store-badge__big{font-size:0.95rem; font-weight:600;}
+  .app-hero__note{font-size:0.88rem; color:var(--ink-soft); display:flex; align-items:center; gap:0.5rem;}
+  .app-hero__note .dot{width:6px; height:6px; border-radius:50%; background:var(--teal); display:inline-block;}
+
+  /* Phone mockup */
+  .phone-wrap{display:flex; justify-content:center;}
+  .phone{width:260px; height:530px; background:var(--ink); border-radius:36px; padding:12px; box-shadow:0 40px 70px rgba(20,22,17,0.18);}
+  .phone__screen{width:100%; height:100%; background:var(--bg-light); border-radius:26px; overflow:hidden; position:relative; display:flex; flex-direction:column;}
+  .phone__bar{padding:1.1rem 1rem 0.8rem; display:flex; align-items:center; justify-content:space-between;}
+  .phone__bar b{font-family:'Libre Caslon Display',serif; font-size:1rem;}
+  .phone__dot{width:8px; height:8px; border-radius:50%; background:var(--teal);}
+  .phone__body{padding:0 1rem 1rem; display:flex; flex-direction:column; gap:0.7rem;}
+  .phone-card{background:#fff; border:1px solid var(--rule-light); border-radius:10px; padding:0.8rem 0.9rem;}
+  .phone-card__label{font-size:0.68rem; color:var(--ink-soft); margin-bottom:0.2rem;}
+  .phone-card__value{font-size:0.92rem; font-weight:600;}
+  .phone-card--alert{background:#F3E4DF; border-color:#E3B7A8;}
+  .phone-card--robot{display:flex; align-items:center; gap:0.7rem;}
+  .phone-card--robot svg{width:34px; height:auto; flex-shrink:0;}
+  .phone-row{display:flex; gap:0.7rem;}
+  .phone-row .phone-card{flex:1;}
+
+  /* ---------- Features ---------- */
+  section{padding:5.5rem 0;}
+  .feature-cat{padding:3.6rem 0;}
+  .feature-cat--tint{background:var(--panel);}
+  .feature-cat__eyebrow{font-size:0.78rem; letter-spacing:0.1em; font-weight:600; color:var(--teal); margin:0 0 0.6rem;}
+  .feature-cat__head{font-size:clamp(1.5rem,2.3vw,1.9rem); margin:0 0 2.6rem; max-width:20ch;}
+  .feature-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:2.4rem 1.6rem;}
+  .feature-grid--5{grid-template-columns:repeat(5,1fr);}
+  .feature{padding-right:1.6rem; position:relative;}
+  .feature__icon{display:block; width:20px; height:20px; color:var(--teal); margin-bottom:1rem; position:relative; z-index:1;}
+  .feature__num{display:block; font-size:0.8rem; color:var(--ink-soft); margin-bottom:0.6rem;}
+  .feature h3{font-size:1.02rem; margin:0 0 0.5rem;}
+  .feature p{font-size:0.89rem; line-height:1.6; color:var(--ink-soft); margin:0; max-width:26ch;}
+
+  /* Footer */
+  footer{background:var(--panel); color:var(--ink-soft); padding:4.5rem 0 2rem; border-top:1px solid var(--rule-light);}
+  .footer__grid{display:grid; grid-template-columns:1.4fr repeat(4,1fr); gap:2.5rem; margin-bottom:3.5rem;}
+  .footer__brand{font-family:'Libre Caslon Display',serif; font-size:1.3rem; color:var(--ink); margin-bottom:0.8rem;}
+  .footer__tagline{font-size:0.92rem; max-width:22ch; line-height:1.5;}
+  .footer__col h4{font-size:0.85rem; color:var(--ink); margin:0 0 1rem; font-weight:600;}
+  .footer__col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:0.7rem;}
+  .footer__col a{color:var(--ink-soft); text-decoration:none; font-size:0.92rem;}
+  .footer__col a:hover, .footer__col a:focus-visible{color:var(--ink);}
+  .footer__bottom{border-top:1px solid var(--rule-light); padding-top:1.5rem; font-size:0.82rem; color:#7C8078; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:980px){
+    .nav__links{display:none;}
+    .app-hero__grid{grid-template-columns:1fr; text-align:center;}
+    .app-hero__sub{margin-left:auto; margin-right:auto;}
+    .store-badges, .app-hero__note{justify-content:center;}
+    .phone-wrap{order:-1; margin-bottom:1rem;}
+    .feature-grid, .feature-grid--5{grid-template-columns:1fr 1fr; row-gap:2.6rem;}
+    .footer__grid{grid-template-columns:1fr 1fr; row-gap:2.5rem;}
+  }
+  @media (max-width:600px){
+    .nav__signin{display:none;}
+    .feature-grid, .feature-grid--5{grid-template-columns:1fr;}
+    .footer__grid{grid-template-columns:1fr;}
+    section{padding:4rem 0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= HERO ================= -->
+<header class="app-hero">
+  <div class="wrap app-hero__grid">
+    <div>
+      <p class="eyebrow" data-en="MOBILE APP" data-ar="تطبيق الموبايل">MOBILE APP</p>
+      <h1 class="app-hero__head display" data-en="Care in your pocket." data-ar="الرعاية في جيبك.">Care in your pocket.</h1>
+      <p class="app-hero__sub" data-en="Get the same meaningful alerts, robot status, and family updates from the ElderGuardian+ dashboard — right on your phone, wherever you are." data-ar="استقبل نفس التنبيهات المهمة وحالة الروبوت وتحديثات العيلة من لوحة تحكم إلدر جارديان+ — على موبايلك، وانت فين ما كنت.">Get the same meaningful alerts, robot status, and family updates from the ElderGuardian+ dashboard — right on your phone, wherever you are.</p>
+      <div class="store-badges">
+        <a class="store-badge" href="#">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 1c.1 1-.3 2-1 2.8-.7.8-1.8 1.4-2.8 1.3-.1-1 .4-2.1 1-2.8C14.3 1.5 15.4 1 16.4 1zm3.3 16.2c-.5 1.1-.7 1.6-1.4 2.6-.9 1.4-2.2 3.1-3.8 3.1-1.4 0-1.8-.9-3.6-.9-1.9 0-2.4.9-3.7.9-1.6 0-2.8-1.5-3.7-2.9C1.2 17.1.4 13.3 1.9 10.7c.8-1.4 2.2-2.3 3.7-2.3 1.4 0 2.3.9 3.6.9 1.2 0 2-.9 3.6-.9 1.2 0 2.5.7 3.4 1.8-3 1.6-2.5 5.9.5 7z"/></svg>
+          <span><span class="store-badge__small" data-en="Download on the" data-ar="حمّله من">Download on the</span><span class="store-badge__big">App Store</span></span>
+        </a>
+        <a class="store-badge" href="#">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 2.2c-.4.3-.7.8-.7 1.4v17c0 .6.3 1.1.7 1.4l9.6-9.9L3 2.2z"/><path d="M16.8 8.4 5.1 1.7c-.3-.2-.6-.2-.9-.2l9.9 10.2 2.7-3.3z"/><path d="M16.8 15.6 4.2 22.5c.3 0 .6 0 .9-.2l11.7-6.7-2.7-3.3z"/><path d="M20.4 10.4 17.6 8.8l-2.9 3 2.9 3 2.8-1.6c.9-.5.9-1.9 0-2.4z" opacity="0.85"/></svg>
+          <span><span class="store-badge__small" data-en="Get it on" data-ar="حمّله من">Get it on</span><span class="store-badge__big">Google Play</span></span>
+        </a>
+      </div>
+      <p class="app-hero__note"><span class="dot"></span><span data-en="Free to download. Works with any ElderGuardian+ system." data-ar="التحميل مجاني. بيشتغل مع أي نظام إلدر جارديان+.">Free to download. Works with any ElderGuardian+ system.</span></p>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone__screen">
+          <div class="phone__bar"><b>ElderGuardian+</b><span class="phone__dot"></span></div>
+          <div class="phone__body">
+            <div class="phone-card phone-card--alert">
+              <div class="phone-card__label" data-en="ALERT" data-ar="تنبيه">ALERT</div>
+              <div class="phone-card__value" data-en="Morning routine started later than usual" data-ar="الروتين الصباحي بدأ متأخر عن المعتاد">Morning routine started later than usual</div>
+            </div>
+            <div class="phone-card phone-card--robot">
+              <svg viewBox="-90 -300 180 320" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="pmHeadGrad" cx="35%" cy="28%" r="80%"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#F0EEE7"/><stop offset="100%" stop-color="#C7C4B9"/></radialGradient>
+                  <linearGradient id="pmDomeGrad" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="55%" stop-color="#E9E7DE"/><stop offset="100%" stop-color="#C2BFB3"/></linearGradient>
+                  <linearGradient id="pmBaseGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E7E5DC"/><stop offset="100%" stop-color="#B3B0A4"/></linearGradient>
+                  <linearGradient id="pmVisorGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2E312B"/><stop offset="100%" stop-color="#101210"/></linearGradient>
+                  <linearGradient id="pmLightGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3D6961"/><stop offset="50%" stop-color="#6FAA9F"/><stop offset="100%" stop-color="#3D6961"/></linearGradient>
+                </defs>
+                <path d="M-56,-18 C-56,-40 -30,-52 0,-52 C30,-52 56,-40 56,-18 C56,-8 30,-2 0,-2 C-30,-2 -56,-8 -56,-18 Z" fill="url(#pmBaseGrad)"/>
+                <path d="M-46,-50 C-50,-92 -34,-126 -14,-132 L14,-132 C34,-126 50,-92 46,-50 C40,-40 -40,-40 -46,-50 Z" fill="url(#pmDomeGrad)"/>
+                <circle cx="0" cy="-206" r="66" fill="url(#pmHeadGrad)"/>
+                <rect x="-48" y="-232" width="96" height="52" rx="26" fill="url(#pmVisorGrad)"/>
+                <rect x="-30" y="-212" width="60" height="12" rx="6" fill="url(#pmLightGrad)"/>
+              </svg>
+              <div>
+                <div class="phone-card__label" data-en="ROBOT" data-ar="الروبوت">ROBOT</div>
+                <div class="phone-card__value" data-en="Connected — 82%" data-ar="متصل — 82%">Connected — 82%</div>
+              </div>
+            </div>
+            <div class="phone-row">
+              <div class="phone-card">
+                <div class="phone-card__label" data-en="MEDS" data-ar="الأدوية">MEDS</div>
+                <div class="phone-card__value" data-en="On track" data-ar="على المسار">On track</div>
+              </div>
+              <div class="phone-card">
+                <div class="phone-card__label" data-en="SLEEP" data-ar="النوم">SLEEP</div>
+                <div class="phone-card__value" data-en="7h 40m" data-ar="٧س ٤٠د">7h 40m</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 01 MONITOR ================= -->
+<section class="feature-cat">
+  <div class="wrap">
+    <p class="feature-cat__eyebrow" data-en="KNOW HOW THEY'RE DOING" data-ar="اعرف حالتهم إيه">KNOW HOW THEY'RE DOING</p>
+    <h2 class="feature-cat__head display" data-en="Everything from the dashboard, made for your pocket." data-ar="كل حاجة من لوحة التحكم، بس في جيبك.">Everything from the dashboard, made for your pocket.</h2>
+    <div class="feature-grid feature-grid--5">
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg>
+        <span class="feature__num">01</span>
+        <h3 data-en="Dashboard" data-ar="لوحة المتابعة">Dashboard</h3>
+        <p data-en="Safety status, last activity, medication, robot battery, and the latest AI recommendation, all at a glance." data-ar="حالة الأمان، آخر نشاط، الدوا، بطارية الروبوت، وأحدث اقتراح من الذكاء الاصطناعي، كل ده بنظرة واحدة.">Safety status, last activity, medication, robot battery, and the latest AI recommendation, all at a glance.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+        <span class="feature__num">02</span>
+        <h3 data-en="Live activity timeline" data-ar="الخط الزمني للنشاط">Live activity timeline</h3>
+        <p data-en="Wake-up, medication, meals, and quiet check-ins, recorded in order — so the daily routine, and anything unusual, is easy to spot." data-ar="الصحيان، الدوا، الأكل، والاطمئنان الهادئ، متسجلين بالترتيب — عشان الروتين اليومي، وأي حاجة غريبة، يبانوا بسهولة.">Wake-up, medication, meals, and quiet check-ins, recorded in order — so the daily routine, and anything unusual, is easy to spot.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.3"/><path d="M5.7 16.8c.5-1.9 1.9-2.9 3.3-2.9s2.8 1 3.3 2.9"/><line x1="14" y1="9" x2="18" y2="9"/><line x1="14" y1="13" x2="18" y2="13"/></svg>
+        <span class="feature__num">03</span>
+        <h3 data-en="Elder profile" data-ar="ملف كبير السن">Elder profile</h3>
+        <p data-en="Personal and medical information, chronic conditions, emergency contacts, routine, and assigned doctor, in one place." data-ar="المعلومات الشخصية والطبية، الأمراض المزمنة، أرقام الطوارئ، الروتين، والدكتور المسؤول، في مكان واحد.">Personal and medical information, chronic conditions, emergency contacts, routine, and assigned doctor, in one place.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h4l2-6.5 4 13L15.5 13H21"/></svg>
+        <span class="feature__num">04</span>
+        <h3 data-en="Health monitoring" data-ar="متابعة الصحة">Health monitoring</h3>
+        <p data-en="Daily activity level, sleep duration and quality, wellness score, and alert history, visualized from the sensors." data-ar="مستوى النشاط اليومي، مدة وجودة النوم، مؤشر الصحة العامة، وسجل التنبيهات، متعروضة من الحساسات.">Daily activity level, sleep duration and quality, wellness score, and alert history, visualized from the sensors.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 L14.1 9.1 L21.2 11.2 L14.1 13.3 L12 20.4 L9.9 13.3 L2.8 11.2 L9.9 9.1 Z"/></svg>
+        <span class="feature__num">05</span>
+        <h3 data-en="AI insights" data-ar="ملاحظات الذكاء الاصطناعي">AI insights</h3>
+        <p data-en="Quiet, early recommendations — like a dip in activity or missed medication — flagged before they become a bigger concern." data-ar="اقتراحات هادئة وبدري — زي قلة نشاط أو دوا اتنسى — بتتلاحظ قبل ما تتحول لمشكلة أكبر.">Quiet, early recommendations — like a dip in activity or missed medication — flagged before they become a bigger concern.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 MANAGE CARE ================= -->
+<section class="feature-cat feature-cat--tint">
+  <div class="wrap">
+    <p class="feature-cat__eyebrow" data-en="MANAGE CARE TOGETHER" data-ar="ديروا الرعاية مع بعض">MANAGE CARE TOGETHER</p>
+    <h2 class="feature-cat__head display" data-en="The tools the whole family needs to help." data-ar="الأدوات اللي العيلة كلها محتاجاها عشان تساعد.">The tools the whole family needs to help.</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 14.2 14.2 4.8a4.2 4.2 0 0 1 6 6L10.8 20.2a4.2 4.2 0 0 1-6-6Z"/><line x1="8.8" y1="9.2" x2="14.8" y2="15.2"/></svg>
+        <span class="feature__num">01</span>
+        <h3 data-en="Medication center" data-ar="مركز الأدوية">Medication center</h3>
+        <p data-en="Add, edit, and schedule medications, then track adherence — reminders sync automatically with the robot at home." data-ar="ضيف وعدّل وجدول الأدوية، وتابع الالتزام بيها — التذكيرات بتتزامن تلقائيًا مع الروبوت في البيت.">Add, edit, and schedule medications, then track adherence — reminders sync automatically with the robot at home.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8" r="3"/><path d="M2.5 20c0-3 2.6-5 6-5s6 2 6 5"/><circle cx="17.5" cy="9" r="2.4"/><path d="M15.3 20.3c0-2.2 1.8-4 4.2-4"/></svg>
+        <span class="feature__num">02</span>
+        <h3 data-en="Family management" data-ar="إدارة العيلة">Family management</h3>
+        <p data-en="Invite family members with different roles, so everyone stays informed with shared, privacy-first notifications." data-ar="اعزم أفراد العيلة بصلاحيات مختلفة، عشان كل حد يفضل عارف بإشعارات مشتركة وبتحترم الخصوصية.">Invite family members with different roles, so everyone stays informed with shared, privacy-first notifications.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+        <span class="feature__num">03</span>
+        <h3 data-en="Calendar" data-ar="الكالندر">Calendar</h3>
+        <p data-en="Doctor appointments, medication schedules, follow-up visits, and reminders — so nothing important is missed." data-ar="مواعيد الدكتور، جدول الأدوية، زيارات المتابعة، والتذكيرات — عشان مفيش حاجة مهمة تفوت.">Doctor appointments, medication schedules, follow-up visits, and reminders — so nothing important is missed.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2h8l4 4v16h-12.5Z"/><line x1="9" y1="13.5" x2="16.5" y2="13.5"/><line x1="9" y1="17" x2="16.5" y2="17"/><line x1="9" y1="10" x2="12" y2="10"/></svg>
+        <span class="feature__num">04</span>
+        <h3 data-en="Reports" data-ar="التقارير">Reports</h3>
+        <p data-en="Daily, weekly, and monthly reports on medication, activity, and sleep — reviewed in the app or shared with a doctor." data-ar="تقارير يومية وأسبوعية وشهرية عن الدوا والنشاط والنوم — تتشاف في التطبيق أو تتشارك مع الدكتور.">Daily, weekly, and monthly reports on medication, activity, and sleep — reviewed in the app or shared with a doctor.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 STAY CONNECTED ================= -->
+<section class="feature-cat">
+  <div class="wrap">
+    <p class="feature-cat__eyebrow" data-en="STAY CONNECTED, EVEN FROM AFAR" data-ar="افضلوا متواصلين، حتى من بعيد">STAY CONNECTED, EVEN FROM AFAR</p>
+    <h2 class="feature-cat__head display" data-en="Reach them, and the robot, from anywhere." data-ar="توصل لهم، وللروبوت، من أي مكان.">Reach them, and the robot, from anywhere.</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="9" width="10" height="9.5" rx="3"/><circle cx="12" cy="4.3" r="1.8"/><line x1="12" y1="6.1" x2="12" y2="9"/><line x1="9.3" y1="13.3" x2="9.3" y2="13.4"/><line x1="14.7" y1="13.3" x2="14.7" y2="13.4"/><line x1="3.5" y1="13" x2="7" y2="13"/><line x1="17" y1="13" x2="20.5" y2="13"/></svg>
+        <span class="feature__num">01</span>
+        <h3 data-en="Remote robot control" data-ar="التحكم عن بعد في الروبوت">Remote robot control</h3>
+        <p data-en="Move the robot, send a voice message, start a wellness check, or activate emergency mode — even while you're away." data-ar="حرّك الروبوت، ابعت رسالة صوتية، ابدأ فحص اطمئنان، أو فعّل وضع الطوارئ — حتى وانت مش موجود.">Move the robot, send a voice message, start a wellness check, or activate emergency mode — even while you're away.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3"/><path d="M5.3 11a6.7 6.7 0 0 0 13.4 0"/><line x1="12" y1="17.5" x2="12" y2="21.5"/><line x1="8.3" y1="21.5" x2="15.7" y2="21.5"/></svg>
+        <span class="feature__num">02</span>
+        <h3 data-en="Voice &amp; communication" data-ar="الصوت والتواصل">Voice &amp; communication</h3>
+        <p data-en="Voice calls, recorded messages, and text-to-speech — the robot plays supportive words through its own speaker." data-ar="مكالمات صوتية، رسايل مسجلة، ورسايل نص لصوت — الروبوت بيشغّلها من سماعته.">Voice calls, recorded messages, and text-to-speech — the robot plays supportive words through its own speaker.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6a4 4 0 0 0 8 0V3"/><line x1="6" y1="3" x2="4.3" y2="3"/><line x1="14" y1="3" x2="15.7" y2="3"/><path d="M10 13v2.5a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="14.3" r="1.5"/></svg>
+        <span class="feature__num">03</span>
+        <h3 data-en="Doctor communication" data-ar="التواصل مع الدكتور">Doctor communication</h3>
+        <p data-en="Chat directly with the assigned doctor and receive instructions, appointment updates, and treatment notes." data-ar="اتكلم مباشرة مع الدكتور المسؤول واستلم التعليمات وتحديثات المواعيد وملاحظات العلاج.">Chat directly with the assigned doctor and receive instructions, appointment updates, and treatment notes.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5 22 20.5H2Z"/><line x1="12" y1="9.5" x2="12" y2="14.5"/><line x1="12" y1="17.3" x2="12" y2="17.35"/></svg>
+        <span class="feature__num">04</span>
+        <h3 data-en="Emergency center" data-ar="مركز الطوارئ">Emergency center</h3>
+        <p data-en="Call family, contact the doctor, or reach emergency services in one tap — built for rapid response." data-ar="اتصل بالعيلة أو الدكتور أو خدمات الطوارئ بضغطة واحدة — مصمم للرد السريع.">Call family, contact the doctor, or reach emergency services in one tap — built for rapid response.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 ALWAYS IN SYNC ================= -->
+<section class="feature-cat feature-cat--tint">
+  <div class="wrap">
+    <p class="feature-cat__eyebrow" data-en="ALWAYS IN SYNC" data-ar="دايمًا متزامنين">ALWAYS IN SYNC</p>
+    <h2 class="feature-cat__head display" data-en="Nothing important slips through." data-ar="مفيش حاجة مهمة بتفوت.">Nothing important slips through.</h2>
+    <div class="feature-grid" style="grid-template-columns:repeat(2,1fr); max-width:52rem;">
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg>
+        <span class="feature__num">01</span>
+        <h3 data-en="Smart notifications" data-ar="إشعارات ذكية">Smart notifications</h3>
+        <p data-en="Fall risk, medication delay, low activity, emergency alerts, and doctor messages — delivered the moment they happen." data-ar="خطر السقوط، تأخير الدوا، قلة النشاط، تنبيهات الطوارئ، ورسايل الدكتور — بتوصل أول ما تحصل.">Fall risk, medication delay, low activity, emergency alerts, and doctor messages — delivered the moment they happen.</p>
+      </div>
+      <div class="feature">
+        <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17.5a4.3 4.3 0 0 1 .5-8.55A5.8 5.8 0 0 1 18.4 11.7a3.7 3.7 0 0 1-.5 6.8H7Z"/></svg>
+        <span class="feature__num">02</span>
+        <h3 data-en="Data synchronization" data-ar="مزامنة البيانات">Data synchronization</h3>
+        <p data-en="Every update from family, doctors, or the robot reflects instantly across the whole ElderGuardian+ platform." data-ar="أي تحديث من العيلة أو الدكاترة أو الروبوت بينعكس فورًا على منصة إلدر جارديان+ كلها.">Every update from family, doctors, or the robot reflects instantly across the whole ElderGuardian+ platform.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand">ElderGuardian+</div>
+        <p class="footer__tagline" data-en="Technology that protects independence." data-ar="تكنولوجيا بتحمي الاستقلالية.">Technology that protects independence.</p>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Product" data-ar="المنتج">Product</h4>
+        <ul>
+          <li><a href="elderguardian-robot-standalone.html" data-en="The Robot" data-ar="الروبوت">The Robot</a></li>
+          <li><a href="elderguardian-sensors.html" data-en="Smart Sensors" data-ar="حساسات ذكية">Smart Sensors</a></li>
+          <li><a href="elderguardian-doctor-marketplace.html" data-en="Doctor Care" data-ar="رعاية الدكاترة">Doctor Care</a></li>
+          <li><a href="elderguardian-mobile-app.html" data-en="Mobile App" data-ar="تطبيق الموبايل">Mobile App</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Services" data-ar="الخدمات">Services</h4>
+        <ul>
+          <li><a href="#" data-en="Installation" data-ar="التركيب">Installation</a></li>
+          <li><a href="#" data-en="Maintenance" data-ar="الصيانة">Maintenance</a></li>
+          <li><a href="elderguardian-help.html" data-en="Support" data-ar="الدعم">Support</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Company" data-ar="الشركة">Company</h4>
+        <ul>
+          <li><a href="#" data-en="About" data-ar="من إحنا">About</a></li>
+          <li><a href="#" data-en="Privacy" data-ar="الخصوصية">Privacy</a></li>
+          <li><a href="#" data-en="Security" data-ar="الأمان">Security</a></li>
+          <li><a href="#" data-en="Terms" data-ar="الشروط">Terms</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4 data-en="Account" data-ar="الحساب">Account</h4>
+        <ul>
+          <li><a href="elderguardian-login.html" data-en="Sign In" data-ar="تسجيل الدخول">Sign In</a></li>
+          <li><a href="#" data-en="Orders" data-ar="الطلبات">Orders</a></li>
+          <li><a href="#" data-en="Dashboard" data-ar="لوحة التحكم">Dashboard</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .lang-toggle{position:fixed; top:1.2rem; right:1.2rem; z-index:80; display:flex; border:1px solid rgba(30,33,29,0.25); border-radius:999px; overflow:hidden; background:rgba(245,243,238,0.9); backdrop-filter:blur(6px); direction:ltr;}
+  .lang-toggle button{border:none; background:none; padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'Public Sans',sans-serif; color:var(--ink-soft); cursor:pointer;}
+  .lang-toggle button.is-active{background:var(--teal); color:#0F1210; font-weight:600;}
+</style>
+<div class="lang-toggle">
+  <button type="button" data-lang="en" class="is-active">EN</button>
+  <button type="button" data-lang="ar">AR</button>
+</div>
+<script>
+  document.querySelectorAll('.lang-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('is-active', b.dataset.lang === lang));
+      document.documentElement.setAttribute('lang', lang);
+      document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      document.title = lang === 'ar' ? 'إلدر جارديان+ — تطبيق الموبايل' : 'ElderGuardian+ — Mobile App';
+      document.querySelectorAll('[data-en]').forEach(el => {
+        el.textContent = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
